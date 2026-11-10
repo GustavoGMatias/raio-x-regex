@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const { parse } = require('../src/parser');
-const { construirAFN, tracoAFN, grafoAFN, rotuloConjunto } = require('../src/nfa');
+const { construirAFN, passosThompson, tracoAFN, grafoAFN, rotuloConjunto } = require('../src/nfa');
 const { casarBacktracking } = require('../src/backtrack');
 
 const afnDe = (er) => construirAFN(parse(er));
@@ -78,6 +78,53 @@ test('rótulos', () => {
   assert.equal(rotuloConjunto(parse('[0-9]').set), '[0-9]');
   assert.equal(rotuloConjunto(parse('.').set), '.');
   assert.equal(rotuloConjunto(parse('[^0-9]').set), '[^0-9]');
+});
+
+test('traço: morreuEm é o índice do caractere que matou a cadeia, ou -1', () => {
+  const afn = afnDe('a(b|c)*');
+  assert.equal(tracoAFN(afn, 'abc').morreuEm, -1);
+  assert.equal(tracoAFN(afn, 'abx').morreuEm, 2);
+  assert.equal(tracoAFN(afn, 'xa').morreuEm, 0);
+  assert.equal(tracoAFN(afn, '').morreuEm, -1);
+  assert.equal(tracoAFN(afn, 'b').aceita, false); // rejeitou, mas morreu (índice 0)
+  assert.equal(tracoAFN(afn, 'b').morreuEm, 0);
+});
+
+test('origem: um id de nó da AST para cada estado', () => {
+  const ast = parse('a(b|c)*');
+  const afn = construirAFN(ast);
+  assert.equal(afn.origem.length, afn.n);
+  const ids = new Set();
+  (function ir(n) { ids.add(n.id); if (n.a) ir(n.a); if (n.b) ir(n.b); })(ast);
+  for (const o of afn.origem) assert.ok(ids.has(o), `origem ${o} não é id de nó`);
+  // os dois estados de um char vêm do nó dele: o "a" (id 2) criou q0 e q1
+  assert.deepEqual(afn.origem.slice(0, 2), [2, 2]);
+});
+
+test('passosThompson: um passo por nó, filhos antes do pai, estados sem repetição', () => {
+  const ast = parse('a(b|c)*');
+  const afn = construirAFN(ast);
+  const passos = passosThompson(ast);
+  assert.equal(passos.length, 6);
+  assert.deepEqual(passos.map((p) => p.noId), [2, 5, 6, 4, 3, 1]);
+  for (const p of passos) {
+    assert.ok(p.operador && p.texto && Array.isArray(p.estados));
+  }
+  // juntando os estados dos passos aparecem todos os estados do AFN, uma vez cada
+  const todos = passos.flatMap((p) => p.estados).sort((x, y) => x - y);
+  assert.deepEqual(todos, [...Array(afn.n).keys()]);
+  // cada estado listado num passo tem origem igual ao nó do passo
+  for (const p of passos) for (const s of p.estados) assert.equal(afn.origem[s], p.noId);
+  // a concatenação só liga fragmentos: não cria estados
+  assert.deepEqual(passos[5].estados, []);
+});
+
+test('passosThompson é consistente com construirAFN (mesma numeração de estados)', () => {
+  for (const er of ['a', 'ab|c', '(a|b)*abb', 'a{2,3}']) {
+    const ast = parse(er);
+    const n = construirAFN(ast).n;
+    assert.equal(passosThompson(ast).reduce((t, p) => t + p.estados.length, 0), n, er);
+  }
 });
 
 // ---------- comparação com o RegExp do JS e com o backtracking ----------
