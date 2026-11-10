@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Desafio · Raio-X Regex</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;700&family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&display=swap" rel="stylesheet">
+  <style>
+    :root { color-scheme: light; }
+    body { margin: 0; padding: 48px 20px; background: #f6eedf; color: #17161b; }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-tema="claro"]) { color-scheme: dark; }
+      :root:not([data-tema="claro"]) body { background: #17161b; color: #f6eedf; }
+    }
+    #log { font: 14px ui-monospace, monospace; margin: 24px auto 0; max-width: 1120px; opacity: 0.6; }
+    #log.erro { color: #c2261d; opacity: 1; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <main id="aba"></main>
+  <div id="log"></div>
+
+  <!-- Motor (Partes 1 e 2) -->
+  <script src="src/parser.js"></script>
+  <script src="src/nfa.js"></script>
+  <script src="src/dfa.js"></script>
+  <script src="src/exemplos.js"></script>
+  <!-- Desenho 3D (Parte 4, do Pierre). Se o arquivo ainda não existir, o raio-x usa a fita 2D. -->
+  <script src="src/viz3d.js"></script>
+  <!-- Parte 3 (Luciana) -->
+  <script src="src/scanner.js"></script>
+  <script src="src/patterns.js"></script>
+  <script src="src/contagem.js"></script>
+  <script src="src/raiox.js"></script>
+  <script src="src/desafio.js"></script>
+  <script>
+    // Enquanto o main.js não existe, a página liga o motor aqui mesmo:
+    // ER → árvore → AFN → AFD → AFD mínimo.
+    const compilar = (er) => Raio.minimizar(Raio.afnParaAFD(Raio.construirAFN(Raio.parse(er))));
+    const log = document.getElementById('log');
+    try {
+      Raio.montarDesafio(document.getElementById('aba'), {
+        gerarExemplos: Raio.gerarExemplos, executarAFD: Raio.executarAFD, compilar,
+      });
+    } catch (e) {
+      log.className = 'erro';
+      log.textContent = String(e.stack || e);
+    }
+  </script>
+</body>
+</html>
