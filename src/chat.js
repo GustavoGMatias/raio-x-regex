@@ -52,17 +52,13 @@
 
   // ---------- Parte com tela ----------
   //
-  // Layout: conversa à esquerda, cartão azul do raio-x (src/raiox.js) à direita.
-  // Clicar num trecho colorido mostra no cartão o autômato que o reconheceu.
-  // Em tela estreita, o cartão vai para baixo da conversa.
+  // Layout: conversa em cima e, embaixo, o cartão azul do raio-x (src/raiox.js) na
+  // largura toda (autômatos grandes cabem melhor). Clicar num trecho colorido mostra no
+  // cartão o autômato que o reconheceu e rola a página até ele.
 
   const CSS = `
   .rx-chat { max-width: 1120px; margin: 0 auto; }
   .rx-chat-corpo { display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px; }
-  @media (min-width: 900px) {
-    .rx-chat-corpo { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: start; }
-    .rx-chat .rx-raiox { position: sticky; top: 24px; }
-  }
   .rx-conversa { display: grid; gap: 14px; min-width: 0; }
   .rx-legenda { display: flex; flex-wrap: wrap; gap: 6px; }
   .rx-chip { border: 1.5px solid var(--rx-texto); background: transparent; color: inherit;
@@ -72,7 +68,7 @@
   .rx-chip i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; }
   .rx-mensagens { display: flex; flex-direction: column; gap: 10px; padding: 18px 0; max-height: 460px; overflow-y: auto;
     border-top: 1.5px solid var(--rx-texto); border-bottom: 1px solid var(--rx-linha); }
-  .rx-msg { max-width: 82%; padding: 10px 16px; border-radius: 22px; font-size: 16px; line-height: 1.55;
+  .rx-msg { max-width: min(82%, 640px); padding: 10px 16px; border-radius: 22px; font-size: 16px; line-height: 1.55;
     white-space: pre-wrap; overflow-wrap: anywhere; border: 1.5px solid var(--rx-texto); background: var(--rx-campo); }
   .rx-msg.eu { align-self: flex-end; border-color: var(--azul); border-bottom-right-radius: 6px; }
   .rx-msg.outro { align-self: flex-start; border-bottom-left-radius: 6px; }
@@ -188,6 +184,7 @@
       // O trecho veio do varrer, então foi aceito: não morreu e terminou na aceitação.
       const resultado = { caminho: caminho(padrao.afd, lido), morreuEm: -1, aceita: true, esperado: [] };
       raiox.mostrar({ padrao, texto: lido, resultado, modo: 'tudo' });
+      raiox.trazer();
       if (typeof deps.aoClicar === 'function') deps.aoClicar(padrao, trecho);
     }
 

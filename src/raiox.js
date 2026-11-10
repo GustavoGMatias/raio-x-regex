@@ -65,6 +65,7 @@
   .rx-raiox {
     position: relative; background: var(--azul); color: var(--creme); border-radius: 28px;
     padding: 26px 26px 22px; font-family: var(--rx-fonte); overflow: hidden;
+    scroll-margin-top: 76px; /* ao rolar até o cartão, não fica escondido atrás da barra de abas */
   }
   .rx-raiox h3 { margin: 0; font: 800 44px/0.95 var(--rx-titulo); font-stretch: 75%; text-transform: uppercase; }
   .rx-quantas { margin: 18px 0 0; padding-top: 16px; border-top: 1px solid #f6eedf40; }
@@ -602,7 +603,16 @@
       }
     }
 
-    return { mostrar, vazio };
+    // Rola a página até o cartão, se ele estiver fora da tela (o cartão fica embaixo).
+    function trazer() {
+      const r = painel.getBoundingClientRect();
+      const alturaTela = window.innerHeight || 800;
+      if (r.top < 0 || r.top > alturaTela * 0.45) {
+        painel.scrollIntoView({ behavior: semMovimento() ? 'auto' : 'smooth', block: 'start' });
+      }
+    }
+
+    return { mostrar, vazio, trazer };
   }
 
   const api = { criarRaioX, cabecalho, rotuloAmigavel, passosLeitura };
