@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demo da tabela de conversão</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, sans-serif; margin: 24px; max-width: 1100px; }
+    .linha { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+    input { font: 16px ui-monospace, monospace; padding: 6px 8px; min-width: 260px; }
+    h2 { font-size: 1.1rem; margin-top: 24px; }
+    .erro { color: #d33; }
+  </style>
+</head>
+<body>
+  <h1>Tabela da conversão</h1>
+  <p>Teste isolado de <code>src/tabela.js</code>. → é o estado inicial, * marca aceitação e — é o estado morto.
+    Clique numa linha do mínimo para acender, no AFD, os estados que ela junta.</p>
+  <div class="linha">
+    <input id="er" value="(a|b)*ab" aria-label="Expressão regular">
+    <button id="ir">Converter</button>
+    <span id="erro" class="erro"></span>
+  </div>
+  <h2>AFN → AFD (subconjuntos)</h2>
+  <div id="t-afd"></div>
+  <h2>AFD → AFD mínimo (classes)</h2>
+  <div id="t-min"></div>
+
+  <script src="src/parser.js"></script>
+  <script src="src/nfa.js"></script>
+  <script src="src/dfa.js"></script>
+  <script src="src/tabela.js"></script>
+  <script>
+    function converter() {
+      const er = document.getElementById('er').value;
+      document.getElementById('erro').textContent = '';
+      try {
+        const afd = Raio.afnParaAFD(Raio.construirAFN(Raio.parse(er)));
+        const min = Raio.minimizar(afd);
+        const tAfd = Raio.montarTabela(document.getElementById('t-afd'), afd);
+        const tMin = Raio.montarTabela(document.getElementById('t-min'), min, {
+          aoSelecionar(q) { tMin.destacar([q]); tAfd.destacar(min.classes[q]); },
+        });
+      } catch (e) { document.getElementById('erro').textContent = e.message; }
+    }
+    document.getElementById('ir').onclick = converter;
+    document.getElementById('er').onkeydown = (e) => { if (e.key === 'Enter') converter(); };
+    converter();
+  </script>
+</body>
+</html>
