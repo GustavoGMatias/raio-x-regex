@@ -44,11 +44,8 @@
 
   const CSS = `
   .rx-desafio { max-width: 1120px; margin: 0 auto; }
+  /* A pergunta em cima e, embaixo, o cartão do raio-x na largura toda. */
   .rx-desafio-corpo { display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px; }
-  @media (min-width: 900px) {
-    .rx-desafio-corpo { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: start; }
-    .rx-desafio .rx-raiox { position: sticky; top: 24px; }
-  }
   .rx-desafio .rx-escolha { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 22px; }
   .rx-desafio .rx-escolha button { border: 1.5px solid var(--rx-texto); background: transparent; color: inherit;
     border-radius: 999px; padding: 4px 12px; font: 500 14px var(--rx-fonte); cursor: pointer; }
@@ -212,6 +209,7 @@
       bProxima.hidden = false;
       bProxima.focus({ preventScroll: true });
       raiox.mostrar({ padrao: p, texto: atual.cadeia, resultado: r, modo: 'tudo' });
+      raiox.trazer();
     }
 
     bAceita.onclick = () => responder(true);

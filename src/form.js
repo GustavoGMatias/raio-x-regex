@@ -52,18 +52,16 @@
   // ---------- Parte com tela ----------
   //
   // Layout (referência: cardápio com linhas finas + tela azul): os campos são
-  // linhas de uma tabela à esquerda; à direita, o cartão azul do raio-x
-  // (src/raiox.js) mostra o autômato lendo o campo atual, ao vivo.
-  // Em tela estreita, o cartão vai para baixo dos campos.
+  // linhas de uma tabela, em duas colunas; embaixo, o cartão azul do raio-x
+  // (src/raiox.js) mostra o autômato lendo o campo atual, ao vivo. Duas colunas
+  // deixam os campos baixinhos, para o cartão aparecer logo abaixo deles.
 
   const CSS = `
   .rx-form { max-width: 1120px; margin: 0 auto; }
   .rx-form-corpo { display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px; }
-  @media (min-width: 900px) {
-    .rx-form-corpo { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: start; }
-    .rx-form .rx-raiox { position: sticky; top: 24px; }
-  }
-  .rx-campos { margin: 0; padding: 0; border: 0; min-width: 0; border-top: 1.5px solid var(--rx-texto); }
+  .rx-campos { margin: 0; padding: 0; border: 0; min-width: 0; border-top: 1.5px solid var(--rx-texto);
+    display: grid; grid-template-columns: minmax(0, 1fr); column-gap: 48px; }
+  @media (min-width: 900px) { .rx-campos { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
   .rx-linha { display: grid; grid-template-columns: 130px minmax(0, 1fr); column-gap: 16px; row-gap: 4px;
     align-items: center; padding: 14px 0; border-bottom: 1px solid var(--rx-linha); }
   .rx-linha label { font-weight: 700; font-size: 16px; }
