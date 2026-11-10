@@ -46,23 +46,51 @@
     S: () => conjunto((c) => c !== ' '),
   };
 
-  const eps = () => ({ t: 'eps' });
-  const car = (set) => ({ t: 'char', set });
-  const cat = (a, b) => ({ t: 'cat', a, b });
-  const alt = (a, b) => ({ t: 'alt', a, b });
-  const star = (a) => ({ t: 'star', a });
+  // Todo nó tem `trecho: [inicio, fim)`, a posição do pedaço da ER que ele representa.
+  // O `id` é colocado no fim do parse, em pré-ordem (ver numerar).
+  const eps = (trecho) => ({ t: 'eps', trecho });
+  const car = (set, trecho) => ({ t: 'char', set, trecho });
+  const cat = (a, b, trecho) => ({ t: 'cat', a, b, trecho });
+  const alt = (a, b, trecho) => ({ t: 'alt', a, b, trecho });
+  const star = (a, trecho) => ({ t: 'star', a, trecho });
 
-  function repetir(a, min, max) {
+  // Cópia da subárvore: cada cópia de `a` numa repetição ganha ids próprios.
+  function clonar(no) {
+    const c = { t: no.t, trecho: [...no.trecho] };
+    if (no.set) c.set = new Set(no.set);
+    if (no.a) c.a = clonar(no.a);
+    if (no.b) c.b = clonar(no.b);
+    return c;
+  }
+
+  // `trecho` é o do operador inteiro (átomo + operador): os nós criados na
+  // expansão herdam esse trecho; as cópias do átomo mantêm o trecho do átomo.
+  function repetir(a, min, max, trecho) {
     // max === Infinity => {min,}
     let r = null;
-    const juntar = (x) => (r === null ? x : cat(r, x));
-    for (let i = 0; i < min; i++) r = juntar(a);
-    if (max === Infinity) return juntar(star(a));
+    let usouOriginal = false;
+    const copia = () => { if (!usouOriginal) { usouOriginal = true; return a; } return clonar(a); };
+    const juntar = (x) => (r === null ? x : cat(r, x, [...trecho]));
+    for (let i = 0; i < min; i++) r = juntar(copia());
+    if (max === Infinity) return juntar(star(copia(), [...trecho]));
     // (max - min) cópias opcionais aninhadas: a{0,3} = (a(a(a)?)?)?
     let opc = null;
-    for (let i = 0; i < max - min; i++) opc = alt(opc === null ? a : cat(a, opc), eps());
+    for (let i = 0; i < max - min; i++) {
+      opc = alt(opc === null ? copia() : cat(copia(), opc, [...trecho]), eps([...trecho]), [...trecho]);
+    }
     if (opc !== null) r = juntar(opc);
-    return r === null ? eps() : r;
+    return r === null ? eps([...trecho]) : r;
+  }
+
+  // Numera os nós em pré-ordem (pai antes dos filhos, a antes de b), a partir de 1.
+  function numerar(raiz) {
+    let n = 0;
+    (function ir(no) {
+      no.id = ++n;
+      if (no.a) ir(no.a);
+      if (no.b) ir(no.b);
+    })(raiz);
+    return raiz;
   }
 
   function parse(er) {
@@ -127,8 +155,8 @@
           set.add(ini);
         }
       }
-      if (negar) return car(conjunto((c) => !set.has(c)));
-      return car(set);
+      if (negar) return car(conjunto((c) => !set.has(c)), [abre, i]);
+      return car(set, [abre, i]);
     }
 
     function lerInteiro() {
@@ -170,8 +198,8 @@
         return no;
       }
       if (c === '[') return parseClasse();
-      if (c === '.') { i++; return car(new Set(ALFABETO)); }
-      if (c === '\\') return car(lerEscape(false).set);
+      if (c === '.') { i++; return car(new Set(ALFABETO), [pos, i]); }
+      if (c === '\\') { const e = lerEscape(false); return car(e.set, [pos, i]); }
       if (c === '*' || c === '+' || c === '?') {
         throw new ErroER(`'${c}' sem nada antes para repetir`, pos);
       }
@@ -179,36 +207,39 @@
       if (c === ')') throw new ErroER("')' sem '(' correspondente", pos);
       if (c === ']' || c === '}') throw new ErroER(`'${c}' solto; use '\\${c}' para o caractere literal`, pos);
       i++;
-      return car(new Set([c]));
+      return car(new Set([c]), [pos, i]);
     }
 
     function parseRep() {
+      const ini = i; // o trecho de um operador começa no início do átomo (com o parêntese, se houver)
       let a = parseAtomo();
       while (!fim()) {
         const c = olhar();
-        if (c === '*') { i++; a = star(a); }
-        else if (c === '+') { i++; a = cat(a, star(a)); }
-        else if (c === '?') { i++; a = alt(a, eps()); }
-        else if (c === '{') { const { min, max } = lerChaves(); a = repetir(a, min, max); }
+        if (c === '*') { i++; a = star(a, [ini, i]); }
+        else if (c === '+') { i++; a = repetir(a, 1, Infinity, [ini, i]); }
+        else if (c === '?') { i++; a = repetir(a, 0, 1, [ini, i]); }
+        else if (c === '{') { const { min, max } = lerChaves(); a = repetir(a, min, max, [ini, i]); }
         else break;
       }
       return a;
     }
 
     function parseCat() {
+      const ini = i;
       let r = null;
       while (!fim() && olhar() !== '|' && olhar() !== ')') {
         const x = parseRep();
-        r = r === null ? x : cat(r, x);
+        r = r === null ? x : cat(r, x, [ini, i]);
       }
-      return r === null ? eps() : r;
+      return r === null ? eps([i, i]) : r;
     }
 
     function parseAlt() {
+      const ini = i;
       let r = parseCat();
       while (!fim() && olhar() === '|') {
         i++;
-        r = alt(r, parseCat());
+        r = alt(r, parseCat(), [ini, i]);
       }
       return r;
     }
@@ -218,7 +249,7 @@
       // só pode sobrar um ')' sem par
       throw new ErroER("')' sem '(' correspondente", i);
     }
-    return ast;
+    return numerar(ast);
   }
 
   const api = { parse, ErroER, ALFABETO };

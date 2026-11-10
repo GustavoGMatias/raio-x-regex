@@ -11,7 +11,7 @@ test('caractere simples', () => {
 });
 
 test('ER vazia vira eps', () => {
-  assert.deepEqual(parse(''), { t: 'eps' });
+  assert.deepEqual(parse(''), { t: 'eps', trecho: [0, 0], id: 1 });
 });
 
 test('concatenação e união (união tem a menor precedência)', () => {
@@ -82,7 +82,7 @@ test('{3} expande em 3 cópias', () => {
 });
 
 test('{0} vira eps', () => {
-  assert.deepEqual(parse('a{0}'), { t: 'eps' });
+  assert.equal(parse('a{0}').t, 'eps');
 });
 
 test('{2,} termina com estrela', () => {
@@ -136,4 +136,55 @@ test('chaves inválidas', () => {
   assert.equal(erro('a{3,1}').pos, 1);
   assert.equal(erro('a{x}').pos, 2);
   assert.equal(erro('a{101}').pos, 1);
+});
+
+// ---------- id e trecho ----------
+function nos(ast) {
+  const r = [];
+  (function ir(n) { r.push(n); if (n.a) ir(n.a); if (n.b) ir(n.b); })(ast);
+  return r;
+}
+
+test('a árvore de a(b|c)* é idêntica à do contrato (ids em pré-ordem, trechos)', () => {
+  const ast = parse('a(b|c)*');
+  assert.deepEqual(nos(ast).map((n) => [n.id, n.t, n.trecho]), [
+    [1, 'cat', [0, 7]],
+    [2, 'char', [0, 1]],
+    [3, 'star', [1, 7]],
+    [4, 'alt', [2, 5]],
+    [5, 'char', [2, 3]],
+    [6, 'char', [4, 5]],
+  ]);
+});
+
+test('todo nó tem id único a partir de 1 e trecho dentro da ER', () => {
+  for (const er of ['', 'a', 'a+', 'a?b', '(ab|c){2,4}', '[a-z]+@x\\.com', '(a*)*', 'a{3}', 'x{1,3}y+']) {
+    const todos = nos(parse(er));
+    const ids = todos.map((n) => n.id);
+    assert.deepEqual(ids, ids.map((_, k) => k + 1), `ids em ${er}`);
+    for (const n of todos) {
+      assert.ok(Array.isArray(n.trecho) && n.trecho.length === 2, `trecho em ${er}`);
+      assert.ok(n.trecho[0] >= 0 && n.trecho[0] <= n.trecho[1] && n.trecho[1] <= er.length, `${er}: ${n.t} ${n.trecho}`);
+    }
+  }
+});
+
+test('nós criados por + herdam o trecho do operador; a cópia do átomo mantém o seu', () => {
+  const ast = parse('ab+'); // cat(a, cat(b, star(b')))
+  const b = ast.b;
+  assert.equal(b.t, 'cat');
+  assert.deepEqual(b.trecho, [1, 3]);        // "b+"
+  assert.deepEqual(b.a.trecho, [1, 2]);      // o "b"
+  assert.deepEqual(b.b.trecho, [1, 3]);      // a estrela criada pela expansão
+  assert.deepEqual(b.b.a.trecho, [1, 2]);    // a cópia do "b"
+  assert.notEqual(b.a.id, b.b.a.id);         // ids distintos, a cópia é outro nó
+});
+
+test('o trecho do texto da ER bate com o pedaço que o nó representa', () => {
+  const er = 'x(ab|c)*y';
+  const ast = parse(er);
+  const star = nos(ast).find((n) => n.t === 'star');
+  assert.equal(er.slice(...star.trecho), '(ab|c)*');
+  const alt = nos(ast).find((n) => n.t === 'alt');
+  assert.equal(er.slice(...alt.trecho), 'ab|c');
 });
