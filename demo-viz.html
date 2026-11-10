@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demo Viz3D</title>
+  <link rel="stylesheet" href="src/style.css">
+  <style>
+    .grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 16px; }
+    .cartao h2 { margin: 0 0 4px; font-size: 17px; }
+    .cartao p { margin: 0 0 12px; }
+    .linha { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .linha input { flex: 1; }
+    .status { min-height: 1.5em; margin-top: 8px; font-size: 14px; }
+    @media (max-width: 640px) { .grade { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="topo"><div class="marca"><span class="logo" aria-hidden="true"></span>Demo do Viz3D (Parte 4)</div></header>
+  <main>
+    <div class="grade">
+      <section class="cartao">
+        <h2>AFD mínimo de exemplo do contrato</h2>
+        <p class="mudo"><code>(a|b)*ab</code>: aceita <code>ab</code>, <code>aab</code>, <code>bbab</code>. Rejeita <code>a</code>, <code>ba</code>, <code>abb</code>.</p>
+        <div class="linha">
+          <input id="cadeia-afd" class="mono" value="bbab" aria-label="Cadeia para o AFD">
+          <button class="botao primario" id="rodar-afd">Executar</button>
+        </div>
+        <canvas class="viz" id="viz-afd"></canvas>
+        <div class="status mudo" id="status-afd">Arraste para girar, roda do mouse para zoom, duplo clique para recentralizar.</div>
+      </section>
+
+      <section class="cartao">
+        <h2>AFN de Thompson (motor real do Gustavo)</h2>
+        <p class="mudo">Digite uma ER e uma cadeia. As bolinhas se dividem nos movimentos vazios.</p>
+        <div class="linha">
+          <input id="er" class="mono" value="a(b|c)*" aria-label="Expressão regular">
+          <input id="cadeia-afn" class="mono" value="abbc" aria-label="Cadeia para o AFN">
+          <button class="botao primario" id="rodar-afn">Executar</button>
+        </div>
+        <canvas class="viz" id="viz-afn"></canvas>
+        <div class="status mudo" id="status-afn"></div>
+      </section>
+    </div>
+  </main>
+
+  <script src="src/parser.js"></script>
+  <script src="src/nfa.js"></script>
+  <script src="src/viz3d.js"></script>
+  <script>
+    const { Viz3D, parse, construirAFN, grafoAFN, tracoAFN } = window.Raio;
+    const $ = (id) => document.getElementById(id);
+
+    // ----- AFD do contrato (escrito à mão) -----
+    const afd = {
+      n: 3, start: 0, aceita: new Set([2]),
+      trans: [new Map([['a', 1], ['b', 0]]), new Map([['a', 1], ['b', 2]]), new Map([['a', 1], ['b', 0]])],
+    };
+    const grafoAfd = {
+      states: [
+        { id: 0, label: 'q0', start: true, accept: false },
+        { id: 1, label: 'q1', start: false, accept: false },
+        { id: 2, label: 'q2', start: false, accept: true },
+      ],
+      edges: [
+        { from: 0, to: 1, label: 'a' }, { from: 0, to: 0, label: 'b' },
+        { from: 1, to: 1, label: 'a' }, { from: 1, to: 2, label: 'b' },
+        { from: 2, to: 1, label: 'a' }, { from: 2, to: 0, label: 'b' },
+      ],
+    };
+    // Substituto provisório do executarAFD da Sofia, no formato do contrato.
+    function executarAFDProvisorio(afd, cadeia) {
+      const caminho = [afd.start];
+      const chars = Array.from(cadeia);
+      for (let i = 0; i < chars.length; i++) {
+        const q = caminho[caminho.length - 1];
+        const p = afd.trans[q].get(chars[i]);
+        if (p === undefined) return { caminho, morreuEm: i, aceita: false, esperado: [...afd.trans[q].keys()] };
+        caminho.push(p);
+      }
+      const fim = caminho[caminho.length - 1];
+      return { caminho, morreuEm: -1, aceita: afd.aceita.has(fim), esperado: [...afd.trans[fim].keys()] };
+    }
+
+    const vizAfd = new Viz3D($('viz-afd'), {
+      aoClicarEstado: (id) => {
+        vizAfd.setDestacados(id == null ? [] : [id]);
+        $('status-afd').textContent = id == null ? '' : `Clicou em q${id}.`;
+      },
+    });
+    vizAfd.setGrafo(grafoAfd);
+    $('rodar-afd').onclick = () => {
+      const cadeia = $('cadeia-afd').value;
+      vizAfd.animar(Viz3D.fasesAFD(executarAFDProvisorio(afd, cadeia), afd, cadeia));
+    };
+
+    // ----- AFN real -----
+    let afn = null;
+    const vizAfn = new Viz3D($('viz-afn'), {
+      aoClicarEstado: (id) => {
+        vizAfn.setDestacados(id == null ? [] : [id]);
+        $('status-afn').textContent = id == null ? '' : `Clicou em q${id}.`;
+      },
+    });
+    function compilar() {
+      try {
+        afn = construirAFN(parse($('er').value));
+        vizAfn.setGrafo(grafoAFN(afn));
+        $('status-afn').textContent = `${afn.n} estados.`;
+        return true;
+      } catch (e) {
+        afn = null;
+        vizAfn.setGrafo({ states: [], edges: [] });
+        $('status-afn').textContent = e.message;
+        return false;
+      }
+    }
+    $('er').addEventListener('input', compilar);
+    $('rodar-afn').onclick = () => {
+      if (!afn && !compilar()) return;
+      const cadeia = $('cadeia-afn').value;
+      vizAfn.animar(Viz3D.fasesAFN(tracoAFN(afn, cadeia), afn, cadeia));
+    };
+    compilar();
+  </script>
+</body>
+</html>
