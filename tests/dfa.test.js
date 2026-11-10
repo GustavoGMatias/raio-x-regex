@@ -112,3 +112,72 @@ test('grafoAFD: estados e arestas agrupadas por par', () => {
   const junto = grafoAFD({ n: 2, start: 0, aceita: new Set([1]), trans: [new Map([['a', 1], ['b', 1]]), new Map()] });
   assert.deepEqual(junto.edges, [{ from: 0, to: 1, label: 'a, b' }]);
 });
+
+// ---------- Minimização ----------
+const { minimizar } = require('../src/dfa');
+
+test('minimizar: exemplo do contrato vira 3 estados, juntando q0 e q2', () => {
+  const min = minimizar(afnParaAFD(afnExemplo()));
+  assert.equal(min.n, 3);
+  assert.equal(min.start, 0);
+  assert.deepEqual([...min.aceita], [2]);
+  assert.deepEqual(transComoObjeto(min), [{ a: 1, b: 0 }, { a: 1, b: 2 }, { a: 1, b: 0 }]);
+  assert.deepEqual(min.classes, [[0, 2], [1], [3]]);
+});
+
+test('minimizar: remove inalcançáveis e estados que não chegam em aceitação', () => {
+  // q0 -a-> q1 (aceita); q0 -b-> q2 (beco sem saída); q3 inalcançável.
+  const afd = {
+    n: 4, start: 0, aceita: new Set([1, 3]),
+    trans: [new Map([['a', 1], ['b', 2]]), new Map(), new Map([['c', 2]]), new Map([['a', 0]])],
+  };
+  const min = minimizar(afd);
+  assert.equal(min.n, 2);
+  assert.deepEqual(transComoObjeto(min), [{ a: 1 }, {}]);
+  assert.deepEqual(min.classes, [[0], [1]]);
+  assert.deepEqual(min.simbolos, ['a']);
+});
+
+test('minimizar: linguagem vazia vira um único estado sem aceitação', () => {
+  const afd = { n: 2, start: 0, aceita: new Set(), trans: [new Map([['a', 1]]), new Map()] };
+  const min = minimizar(afd);
+  assert.equal(min.n, 1);
+  assert.equal(min.aceita.size, 0);
+  assert.equal(min.trans[0].size, 0);
+});
+
+test('minimizar: com aceitaMorto, o morto continua aceitando', () => {
+  // Complemento de "a": aceita tudo menos "a".
+  const comp = { n: 2, start: 0, aceita: new Set([0]), trans: [new Map([['a', 1]]), new Map()], aceitaMorto: true };
+  const min = minimizar(comp);
+  assert.equal(min.aceitaMorto, true);
+  for (const [s, esp] of [['', true], ['a', false], ['aa', true], ['b', true]]) {
+    assert.equal(executarAFD(min, s).aceita, esp, JSON.stringify(s));
+  }
+});
+
+test('minimizar: já mínimo não muda de tamanho e é idempotente', () => {
+  const min = minimizar(afnParaAFD(afnExemplo()));
+  const outra = minimizar(min);
+  assert.equal(outra.n, min.n);
+  assert.deepEqual(transComoObjeto(outra), transComoObjeto(min));
+});
+
+// Com o parser e o AFN do Gustavo (já na main), o fluxo completo.
+const { parse } = require('../src/parser');
+const { construirAFN } = require('../src/nfa');
+const minDe = (er) => minimizar(afnParaAFD(construirAFN(parse(er))));
+
+test('fluxo completo: tamanhos conhecidos do AFD mínimo', () => {
+  assert.equal(minDe('a(b|c)*').n, 2);
+  assert.equal(minDe('(a|b)*ab').n, 3);
+  assert.equal(minDe('a*').n, 1);
+  assert.equal(minDe('[0-9]{2}').n, 3);
+  assert.equal(minDe('[A-Z]{3}[0-9][A-Z][0-9]{2}').n, 8);
+});
+
+test('fluxo completo: placa (Mercosul e antiga)', () => {
+  const min = minDe('[A-Z]{3}([0-9][A-Z][0-9]{2}|-?[0-9]{4})');
+  for (const s of ['ABC1D23', 'ABC-1234', 'ABC1234']) assert.ok(executarAFD(min, s).aceita, s);
+  for (const s of ['ABC1D234', 'AB1D23', 'abc1d23', 'ABC-1D23']) assert.ok(!executarAFD(min, s).aceita, s);
+});
