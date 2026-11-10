@@ -123,3 +123,10 @@ test('varrer: texto sem nada devolve lista vazia', () => {
   assert.deepStrictEqual(varrer('oi, tudo bem?', [placa, doisDig]), []);
   assert.deepStrictEqual(varrer('', [placa]), []);
 });
+
+test('varrer: padrão com maiusculas aceita o texto em minúscula', () => {
+  const placaMai = { ...placa, maiusculas: true };
+  const texto = 'o carro abc1d23 e o ABC1D23';
+  assert.deepStrictEqual(resumo(texto, varrer(texto, [placaMai])), [['placa', 'abc1d23'], ['placa', 'ABC1D23']]);
+  assert.deepStrictEqual(varrer('abc1d23', [placa]), []); // sem a marca, minúscula não entra
+});

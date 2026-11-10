@@ -66,6 +66,18 @@
     return 0;
   }
 
+  // Converte para maiúscula caractere por caractere, sem mudar o tamanho do texto
+  // (assim as posições continuam batendo). Ex.: "ß" vira "SS" em toUpperCase,
+  // então caracteres assim ficam como estão.
+  function maiusculo(texto) {
+    let r = '';
+    for (const c of texto) {
+      const m = c.toUpperCase();
+      r += m.length === c.length ? m : c;
+    }
+    return r;
+  }
+
   // ---------- Varredura ----------
   // Acha todos os destaques de um texto. padroes = [ { nome, afd, ... } ].
   // Devolve [ { inicio, fim, padrao } ], com fim exclusivo e padrao sendo o próprio objeto.
@@ -76,8 +88,10 @@
   //  3. Achou um trecho: pula para o fim dele (destaques nunca se sobrepõem).
   //  4. Nada casou: anda um caractere.
   //  5. Só vale trecho com borda de palavra nas duas pontas.
+  //  6. Padrão com maiusculas: true lê o texto convertido para maiúscula.
   function varrer(texto, padroes) {
     const destaques = [];
+    const textoMaiusculo = maiusculo(texto);
     let pos = 0;
 
     while (pos < texto.length) {
@@ -85,7 +99,8 @@
       let melhorPadrao = null;
 
       for (const padrao of padroes) {
-        const tam = maisLongoComBorda(padrao.afd, texto, pos);
+        const t = padrao.maiusculas ? textoMaiusculo : texto;
+        const tam = maisLongoComBorda(padrao.afd, t, pos);
         if (tam > melhorTam) { // ">" e não ">=": no empate, fica o primeiro da lista
           melhorTam = tam;
           melhorPadrao = padrao;
@@ -103,7 +118,7 @@
     return destaques;
   }
 
-  const api = { maisLongo, varrer, temBordas };
+  const api = { maisLongo, varrer, temBordas, maiusculo };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else { window.Raio = window.Raio || {}; Object.assign(window.Raio, api); }
