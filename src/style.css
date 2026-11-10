@@ -1,79 +1,80 @@
-/* Estilo base do Raio-X de Regex. As cores ficam em variáveis para o modo claro/escuro. */
+/* Estilo base do Raio-X de Regex. As cores ficam em variáveis para o modo claro/escuro.
+   Paleta do grupo (escolhida pela Luciana): creme #f6eedf, azul #3760f9, tinta #17161b e lima #d2fc59. */
 
 :root {
-  --fundo: #f5f6f9;
-  --superficie: #ffffff;
-  --borda: #dde1ea;
-  --texto: #1b2130;
-  --mudo: #667089;
-  --primaria: #0f9b8e;
-  --primaria-texto: #ffffff;
-  --erro: #d13438;
+  --fundo: #f6eedf;
+  --superficie: #fffaf1;
+  --borda: #17161b2e;
+  --texto: #17161b;
+  --mudo: #5d574c;
+  --primaria: #3760f9;
+  --primaria-texto: #f6eedf;
+  --erro: #c2261d;
   --raio: 10px;
 
-  --viz-fundo: #fbfcfe;
-  --viz-no: #ffffff;
-  --viz-borda: #4a5570;
-  --viz-texto: #1b2130;
-  --viz-aresta: #9aa5bd;
-  --viz-rotulo: #3a4459;
-  --viz-rotulo-fundo: #eef1f6;
-  --viz-ativo: #0f9b8e;
-  --viz-destaque: #e07a1f;
-  --viz-morto: #d13438;
-  --viz-legenda-fundo: rgba(255, 255, 255, 0.92);
+  --viz-fundo: #fffaf1;
+  --viz-no: #fffaf1;
+  --viz-borda: #17161b;
+  --viz-texto: #17161b;
+  --viz-aresta: #17161b80;
+  --viz-rotulo: #17161b;
+  --viz-rotulo-fundo: #f6eedf;
+  --viz-ativo: #3760f9;
+  --viz-destaque: #17161b;
+  --viz-morto: #c2261d;
+  --viz-legenda-fundo: rgba(255, 250, 241, 0.92);
 
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-tema="claro"]) {
-    --fundo: #0b0f18;
-    --superficie: #131a27;
-    --borda: #263046;
-    --texto: #e6ebf5;
-    --mudo: #8b97b0;
-    --primaria: #2ec4b6;
-    --primaria-texto: #062a26;
-    --erro: #ff6b6b;
+    --fundo: #17161b;
+    --superficie: #211f27;
+    --borda: #f6eedf2e;
+    --texto: #f6eedf;
+    --mudo: #b9b1a3;
+    --primaria: #3760f9;
+    --primaria-texto: #f6eedf;
+    --erro: #ff8a7a;
 
-    --viz-fundo: #0f1420;
-    --viz-no: #1c2333;
-    --viz-borda: #8b97b0;
-    --viz-texto: #e6ebf5;
-    --viz-aresta: #4d5975;
-    --viz-rotulo: #c9d2e3;
-    --viz-rotulo-fundo: #161d2c;
-    --viz-ativo: #2ec4b6;
-    --viz-destaque: #f4a259;
-    --viz-morto: #ff5a5f;
-    --viz-legenda-fundo: rgba(15, 20, 32, 0.88);
+    --viz-fundo: #211f27;
+    --viz-no: #211f27;
+    --viz-borda: #f6eedf;
+    --viz-texto: #f6eedf;
+    --viz-aresta: #f6eedf80;
+    --viz-rotulo: #f6eedf;
+    --viz-rotulo-fundo: #17161b;
+    --viz-ativo: #d2fc59;
+    --viz-destaque: #3760f9;
+    --viz-morto: #ff8a7a;
+    --viz-legenda-fundo: rgba(23, 22, 27, 0.88);
 
     color-scheme: dark;
   }
 }
 
 :root[data-tema="escuro"] {
-  --fundo: #0b0f18;
-  --superficie: #131a27;
-  --borda: #263046;
-  --texto: #e6ebf5;
-  --mudo: #8b97b0;
-  --primaria: #2ec4b6;
-  --primaria-texto: #062a26;
-  --erro: #ff6b6b;
+  --fundo: #17161b;
+  --superficie: #211f27;
+  --borda: #f6eedf2e;
+  --texto: #f6eedf;
+  --mudo: #b9b1a3;
+  --primaria: #3760f9;
+  --primaria-texto: #f6eedf;
+  --erro: #ff8a7a;
 
-  --viz-fundo: #0f1420;
-  --viz-no: #1c2333;
-  --viz-borda: #8b97b0;
-  --viz-texto: #e6ebf5;
-  --viz-aresta: #4d5975;
-  --viz-rotulo: #c9d2e3;
-  --viz-rotulo-fundo: #161d2c;
-  --viz-ativo: #2ec4b6;
-  --viz-destaque: #f4a259;
-  --viz-morto: #ff5a5f;
-  --viz-legenda-fundo: rgba(15, 20, 32, 0.88);
+  --viz-fundo: #211f27;
+  --viz-no: #211f27;
+  --viz-borda: #f6eedf;
+  --viz-texto: #f6eedf;
+  --viz-aresta: #f6eedf80;
+  --viz-rotulo: #f6eedf;
+  --viz-rotulo-fundo: #17161b;
+  --viz-ativo: #d2fc59;
+  --viz-destaque: #3760f9;
+  --viz-morto: #ff8a7a;
+  --viz-legenda-fundo: rgba(23, 22, 27, 0.88);
 
   color-scheme: dark;
 }
@@ -85,7 +86,7 @@ html, body { margin: 0; }
 body {
   background: var(--fundo);
   color: var(--texto);
-  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font: 15px/1.5 "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   min-height: 100vh;
 }
 
