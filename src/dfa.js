@@ -268,7 +268,48 @@
     return { states, edges };
   }
 
-  const api = { afnParaAFD, minimizar, executarAFD, motivo, grafoAFD, fechoConjunto, moverConjunto, rotulo, porDestino };
+  // ---------- Conferência de equivalência ----------
+  // Simulação direta do AFN (conjunto de estados ativos), sem passar pelo AFD.
+  function aceitaAFN(afn, cadeia) {
+    let ativos = fechoConjunto(afn, [afn.start]);
+    for (const ch of Array.from(cadeia)) {
+      ativos = fechoConjunto(afn, moverConjunto(afn, ativos, ch));
+      if (ativos.length === 0) return false;
+    }
+    return ativos.includes(afn.accept);
+  }
+
+  // Gerador pseudoaleatório com semente (mesma semente = mesmas cadeias, bom para teste).
+  function aleatorio(semente) {
+    let x = semente >>> 0 || 1;
+    return () => {
+      x ^= x << 13; x >>>= 0; x ^= x >>> 17; x ^= x << 5; x >>>= 0;
+      return x / 4294967296;
+    };
+  }
+
+  // Sorteia cadeias e confere se AFN, AFD e mínimo dão a mesma resposta para todas.
+  // As cadeias usam os símbolos do autômato mais um caractere estranho, para também
+  // testar o caminho do estado morto. Devolve { ok, testadas, divergencias }.
+  function conferirEquivalencia(afn, afd, min, opcoes = {}) {
+    const { quantidade = 500, tamanhoMax = 12, semente = 42 } = opcoes;
+    const rand = aleatorio(semente);
+    const letras = [...afd.simbolos, '#'];
+    const divergencias = [];
+    for (let i = 0; i < quantidade; i++) {
+      const tam = Math.floor(rand() * (tamanhoMax + 1));
+      let s = '';
+      for (let j = 0; j < tam; j++) s += letras[Math.floor(rand() * letras.length)];
+      const r = { cadeia: s, afn: aceitaAFN(afn, s), afd: executarAFD(afd, s).aceita, min: executarAFD(min, s).aceita };
+      if (r.afn !== r.afd || r.afd !== r.min) divergencias.push(r);
+    }
+    return { ok: divergencias.length === 0, testadas: quantidade, divergencias };
+  }
+
+  const api = {
+    afnParaAFD, minimizar, executarAFD, motivo, grafoAFD, conferirEquivalencia, aceitaAFN,
+    fechoConjunto, moverConjunto, rotulo, porDestino,
+  };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else { window.Raio = window.Raio || {}; Object.assign(window.Raio, api); }
 })();
