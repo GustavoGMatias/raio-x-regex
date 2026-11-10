@@ -149,6 +149,109 @@
       (r.esperado.length ? ` (ainda faltava ler ${opcoes}).` : '.');
   }
 
+  // ---------- Minimização ----------
+  // Ideia: dois estados são EQUIVALENTES se, para toda cadeia w, ou os dois aceitam w
+  // ou os dois rejeitam. Estados equivalentes podem virar um só.
+  //
+  // Passos:
+  //   1. Joga fora os estados inalcançáveis (BFS a partir do início).
+  //   2. Coloca o estado morto como um estado de verdade (completa o AFD).
+  //   3. Refinamento de partições (algoritmo de Moore): começa com dois grupos,
+  //      {aceita} e {não aceita}, e vai separando estados do mesmo grupo que levam a
+  //      grupos diferentes com algum símbolo. Quando nada mais se separa, cada grupo
+  //      é um estado do AFD mínimo.
+  //   4. O grupo do morto sai do resultado (junto com qualquer estado que não chega
+  //      mais em aceitação, porque ele é equivalente ao morto).
+  //
+  // `classes[i]` diz quais estados do AFD original foram juntados no estado i do mínimo.
+  function minimizar(afd) {
+    // 1. Alcançáveis.
+    const alcancavel = [afd.start];
+    const visto = new Set([afd.start]);
+    for (let k = 0; k < alcancavel.length; k++) {
+      for (const para of afd.trans[alcancavel[k]].values()) {
+        if (!visto.has(para)) { visto.add(para); alcancavel.push(para); }
+      }
+    }
+    const simbolosSet = new Set();
+    for (const q of alcancavel) for (const c of afd.trans[q].keys()) simbolosSet.add(c);
+    const simbolos = [...simbolosSet].sort();
+
+    // 2. Índices 0..R-1 são os estados alcançáveis, R é o morto.
+    const R = alcancavel.length;
+    const MORTO = R;
+    const pos = new Map(alcancavel.map((q, i) => [q, i]));
+    const aceitaMorto = !!afd.aceitaMorto;
+    const ehAceita = (i) => (i === MORTO ? aceitaMorto : afd.aceita.has(alcancavel[i]));
+    const delta = (i, c) => {
+      if (i === MORTO) return MORTO;
+      const para = afd.trans[alcancavel[i]].get(c);
+      return para === undefined ? MORTO : pos.get(para);
+    };
+
+    // 3. Refinamento. grupo[i] = número do grupo do estado i.
+    let grupo = [];
+    for (let i = 0; i <= R; i++) grupo.push(ehAceita(i) ? 1 : 0);
+    let qtd = new Set(grupo).size;
+    for (;;) {
+      // Assinatura: meu grupo + o grupo para onde vou com cada símbolo.
+      const novoNumero = new Map();
+      const novo = grupo.map((g, i) => {
+        const ass = [g, ...simbolos.map((c) => grupo[delta(i, c)])].join(',');
+        if (!novoNumero.has(ass)) novoNumero.set(ass, novoNumero.size);
+        return novoNumero.get(ass);
+      });
+      grupo = novo;
+      if (novoNumero.size === qtd) break; // ninguém se separou: estável
+      qtd = novoNumero.size;
+    }
+
+    // 4. Numera os grupos em ordem de BFS a partir do início, pulando o do morto.
+    const grupoMorto = grupo[MORTO];
+    const membros = new Map();
+    for (let i = 0; i < R; i++) {
+      if (!membros.has(grupo[i])) membros.set(grupo[i], []);
+      membros.get(grupo[i]).push(alcancavel[i]);
+    }
+    const representante = (g) => pos.get(membros.get(g)[0]);
+
+    const extra = aceitaMorto ? { aceitaMorto: true } : {};
+    if (grupo[0] === grupoMorto) {
+      // O início é equivalente ao morto: a linguagem é vazia (ou Σ*, se o morto aceita).
+      return {
+        n: 1, start: 0, aceita: new Set(aceitaMorto ? [0] : []), trans: [new Map()],
+        simbolos: [], classes: [[...membros.get(grupo[0])].sort((a, b) => a - b)], ...extra,
+      };
+    }
+
+    const numero = new Map([[grupo[0], 0]]);
+    const ordem = [grupo[0]];
+    const trans = [];
+    for (let k = 0; k < ordem.length; k++) {
+      const m = new Map();
+      const rep = representante(ordem[k]);
+      for (const c of simbolos) {
+        const g = grupo[delta(rep, c)];
+        if (g === grupoMorto) continue;
+        if (!numero.has(g)) { numero.set(g, ordem.length); ordem.push(g); }
+        m.set(c, numero.get(g));
+      }
+      trans.push(m);
+    }
+
+    const aceita = new Set();
+    ordem.forEach((g, i) => { if (ehAceita(representante(g))) aceita.add(i); });
+    const usados = new Set();
+    for (const m of trans) for (const c of m.keys()) usados.add(c);
+
+    return {
+      n: ordem.length, start: 0, aceita, trans,
+      simbolos: simbolos.filter((c) => usados.has(c)),
+      classes: ordem.map((g) => [...membros.get(g)].sort((a, b) => a - b)),
+      ...extra,
+    };
+  }
+
   // ---------- Grafo para o desenho ----------
   // Transições entre o mesmo par de estados viram uma aresta só ("a, b" ou "[A-Z]").
   function grafoAFD(afd) {
@@ -165,7 +268,7 @@
     return { states, edges };
   }
 
-  const api = { afnParaAFD, executarAFD, motivo, grafoAFD, fechoConjunto, moverConjunto, rotulo, porDestino };
+  const api = { afnParaAFD, minimizar, executarAFD, motivo, grafoAFD, fechoConjunto, moverConjunto, rotulo, porDestino };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else { window.Raio = window.Raio || {}; Object.assign(window.Raio, api); }
 })();
