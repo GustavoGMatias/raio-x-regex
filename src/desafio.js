@@ -92,7 +92,8 @@
     if (deps.padroes) return deps.padroes;
     const base = (typeof window !== 'undefined' && window.Raio && window.Raio.padroes) || [];
     if (!deps.compilar) throw new Error('montarDesafio precisa de deps.padroes (com afd) ou deps.compilar');
-    return base.map((p) => ({ ...p, afd: deps.compilar(p.er) }));
+    // compilar pode devolver o AFD direto ou { er, ast, afn, afd, min } (o do main.js).
+    return base.map((p) => { const r = deps.compilar(p.er); return { ...p, afd: r && r.min ? r.min : r }; });
   }
 
   function montarDesafio(container, deps = {}) {
