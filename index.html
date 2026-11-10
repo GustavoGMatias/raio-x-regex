@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Raio-X de Regex</title>
+  <link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+  <header class="topo">
+    <div class="marca"><span class="logo" aria-hidden="true"></span>Raio-X de Regex</div>
+    <nav class="abas" id="abas" role="tablist" aria-label="Abas"></nav>
+  </header>
+  <main id="conteudo"></main>
+
+  <!-- Motor (cada arquivo pendura suas funções em window.Raio) -->
+  <script src="src/parser.js"></script>
+  <script src="src/nfa.js"></script>
+  <script src="src/backtrack.js"></script>
+  <!-- Quando existirem: src/explicacao.js, src/dfa.js, src/exemplos.js, src/tabela.js,
+       src/arvore.js, src/scanner.js, src/patterns.js, src/chat.js, src/form.js,
+       src/desafio.js, src/duelo.js, src/painel.js, src/lab.js e, por último, src/main.js -->
+
+  <!-- Interface -->
+  <script src="src/viz3d.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>

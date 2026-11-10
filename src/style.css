@@ -1,0 +1,211 @@
+/* Estilo base do Raio-X de Regex. As cores ficam em variáveis para o modo claro/escuro. */
+
+:root {
+  --fundo: #f5f6f9;
+  --superficie: #ffffff;
+  --borda: #dde1ea;
+  --texto: #1b2130;
+  --mudo: #667089;
+  --primaria: #0f9b8e;
+  --primaria-texto: #ffffff;
+  --erro: #d13438;
+  --raio: 10px;
+
+  --viz-fundo: #fbfcfe;
+  --viz-no: #ffffff;
+  --viz-borda: #4a5570;
+  --viz-texto: #1b2130;
+  --viz-aresta: #9aa5bd;
+  --viz-rotulo: #3a4459;
+  --viz-rotulo-fundo: #eef1f6;
+  --viz-ativo: #0f9b8e;
+  --viz-destaque: #e07a1f;
+  --viz-morto: #d13438;
+  --viz-legenda-fundo: rgba(255, 255, 255, 0.92);
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) {
+    --fundo: #0b0f18;
+    --superficie: #131a27;
+    --borda: #263046;
+    --texto: #e6ebf5;
+    --mudo: #8b97b0;
+    --primaria: #2ec4b6;
+    --primaria-texto: #062a26;
+    --erro: #ff6b6b;
+
+    --viz-fundo: #0f1420;
+    --viz-no: #1c2333;
+    --viz-borda: #8b97b0;
+    --viz-texto: #e6ebf5;
+    --viz-aresta: #4d5975;
+    --viz-rotulo: #c9d2e3;
+    --viz-rotulo-fundo: #161d2c;
+    --viz-ativo: #2ec4b6;
+    --viz-destaque: #f4a259;
+    --viz-morto: #ff5a5f;
+    --viz-legenda-fundo: rgba(15, 20, 32, 0.88);
+
+    color-scheme: dark;
+  }
+}
+
+:root[data-tema="escuro"] {
+  --fundo: #0b0f18;
+  --superficie: #131a27;
+  --borda: #263046;
+  --texto: #e6ebf5;
+  --mudo: #8b97b0;
+  --primaria: #2ec4b6;
+  --primaria-texto: #062a26;
+  --erro: #ff6b6b;
+
+  --viz-fundo: #0f1420;
+  --viz-no: #1c2333;
+  --viz-borda: #8b97b0;
+  --viz-texto: #e6ebf5;
+  --viz-aresta: #4d5975;
+  --viz-rotulo: #c9d2e3;
+  --viz-rotulo-fundo: #161d2c;
+  --viz-ativo: #2ec4b6;
+  --viz-destaque: #f4a259;
+  --viz-morto: #ff5a5f;
+  --viz-legenda-fundo: rgba(15, 20, 32, 0.88);
+
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; }
+
+body {
+  background: var(--fundo);
+  color: var(--texto);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+}
+
+code, pre, kbd, input.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+/* ----- Topo e abas ----- */
+
+.topo {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 20px;
+  background: var(--superficie);
+  border-bottom: 1px solid var(--borda);
+  flex-wrap: wrap;
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  padding: 14px 0;
+}
+
+.logo {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--primaria);
+  box-shadow: inset 0 0 0 3px var(--superficie), inset 0 0 0 9px var(--primaria);
+}
+
+.abas { display: flex; gap: 4px; overflow-x: auto; }
+
+.aba {
+  appearance: none;
+  border: 0;
+  background: none;
+  color: var(--mudo);
+  font: inherit;
+  font-weight: 600;
+  padding: 16px 14px 14px;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.aba:hover { color: var(--texto); }
+.aba[aria-selected="true"] { color: var(--texto); border-bottom-color: var(--primaria); }
+.aba:focus-visible { outline: 2px solid var(--primaria); outline-offset: -2px; border-radius: 6px; }
+
+main { padding: 20px; max-width: 1400px; margin: 0 auto; }
+
+/* ----- Blocos comuns (as abas podem usar) ----- */
+
+.cartao {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  padding: 16px;
+}
+
+.vazio {
+  background: var(--superficie);
+  border: 1px dashed var(--borda);
+  border-radius: var(--raio);
+  padding: 40px 24px;
+  text-align: center;
+}
+.vazio h2 { margin: 0 0 8px; }
+.vazio.erro { border-color: var(--erro); text-align: left; }
+.vazio pre { white-space: pre-wrap; color: var(--erro); font-size: 13px; }
+
+.mudo { color: var(--mudo); }
+
+input[type="text"], input:not([type]) {
+  font: inherit;
+  color: var(--texto);
+  background: var(--fundo);
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 8px 10px;
+  min-width: 0;
+}
+input:focus-visible { outline: 2px solid var(--primaria); outline-offset: 0; border-color: transparent; }
+
+button.botao {
+  font: inherit;
+  font-weight: 600;
+  border: 1px solid var(--borda);
+  background: var(--superficie);
+  color: var(--texto);
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+button.botao.primario { background: var(--primaria); border-color: var(--primaria); color: var(--primaria-texto); }
+button.botao:hover { filter: brightness(1.06); }
+button.botao:focus-visible { outline: 2px solid var(--primaria); outline-offset: 2px; }
+
+/* ----- Canvas do 3D ----- */
+
+.viz {
+  display: block;
+  width: 100%;
+  height: 420px;
+  border-radius: var(--raio);
+  border: 1px solid var(--borda);
+  background: var(--viz-fundo);
+  cursor: grab;
+}
+.viz:active { cursor: grabbing; }
+
+@media (max-width: 640px) {
+  .topo { padding: 0 16px; gap: 8px; }
+  main { padding: 16px; }
+  .viz { height: 320px; }
+}
