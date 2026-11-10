@@ -8,6 +8,7 @@
 //                                  do Pierre, e grafoAFD da Sofia). Sem eles, aparece a fita 2D.
 //   opcoes.executarAFD             para a caixa "testar outra cadeia" (só com opcoes.testar)
 //   opcoes.testar                  true mostra a caixa de teste e o botão "tentar uma inválida"
+//   opcoes.totalCadeias, opcoes.contarCadeias  (src/contagem.js) mostram "quantas existem?"
 //
 // mostrar({ padrao, texto, resultado, modo })
 //   padrao     { nome, er, cor, afd, naoExemplos }
@@ -66,6 +67,11 @@
     padding: 26px 26px 22px; font-family: var(--rx-fonte); overflow: hidden;
   }
   .rx-raiox h3 { margin: 0; font: 800 44px/0.95 var(--rx-titulo); font-stretch: 75%; text-transform: uppercase; }
+  .rx-quantas { margin: 18px 0 0; padding-top: 16px; border-top: 1px solid #f6eedf40; }
+  .rx-quantas:empty { display: none; }
+  .rx-quantas p { margin: 0; font-size: 14px; }
+  .rx-quantas strong { display: block; margin: 2px 0; font: 800 38px/1 var(--rx-titulo); font-stretch: 75%;
+    color: var(--creme); overflow-wrap: anywhere; }
   .rx-raiox .rx-er { margin: 16px 0 0; font: 13px/1.5 var(--rx-mono); overflow-wrap: anywhere; opacity: 0.75; }
   .rx-raiox .rx-vazio { display: block; margin: 40px 0 30px; font: 600 24px/1.3 var(--rx-fonte); max-width: 24ch; }
 
@@ -273,6 +279,8 @@
     const grafoAFD = opcoes.grafoAFD;
     const usa3D = typeof Viz3D === 'function' && typeof grafoAFD === 'function';
     const executarAFD = opcoes.executarAFD || R.executarAFD;
+    const totalCadeias = opcoes.totalCadeias || R.totalCadeias;
+    const contarCadeias = opcoes.contarCadeias || R.contarCadeias;
 
     // Partes fixas do cartão; só o conteúdo delas muda.
     const titulo = el('h3');
@@ -289,6 +297,7 @@
     const agora = el('p', 'rx-agora');
     agora.setAttribute('aria-live', 'polite');
     const status = el('p', 'rx-status');
+    const quantas = el('div', 'rx-quantas');
     const er = el('p', 'rx-er');
     painel.append(titulo, cadeia, area, controles, agora, status);
 
@@ -305,7 +314,7 @@
       teste.caixa.append(label, teste.input, teste.ler, teste.invalida);
       painel.appendChild(teste.caixa);
     }
-    painel.appendChild(er);
+    painel.append(quantas, er);
 
     let viz = null;
     let enquadrar = () => {};
@@ -491,6 +500,26 @@
       };
     }
 
+    // "Quantas existem?": conta, pelo próprio autômato, quantas cadeias ele aceita.
+    // Linguagem finita (placa, CPF...): o total. Infinita (e-mail, link...): quantas
+    // existem só com o tamanho da cadeia atual.
+    const totais = new Map();
+    function mostrarQuantas(padrao, tamanho) {
+      quantas.innerHTML = '';
+      if (typeof totalCadeias !== 'function' || typeof contarCadeias !== 'function') return;
+      if (!totais.has(padrao)) totais.set(padrao, totalCadeias(padrao.afd));
+      const total = totais.get(padrao);
+      const numero = (x) => x.toLocaleString('pt-BR');
+      if (total !== null) {
+        quantas.append(el('p', '', `Quantas cadeias este autômato aceita?`), el('strong', '', numero(total)),
+          el('p', '', total === 1n ? 'Só uma.' : 'Contadas pelo autômato, sem fórmula feita à mão.'));
+      } else {
+        const n = Math.max(1, tamanho);
+        quantas.append(el('p', '', 'Quantas cadeias este autômato aceita?'), el('strong', '', 'Infinitas'),
+          el('p', '', `Só com ${n} caractere${n > 1 ? 's' : ''}, são ${numero(contarCadeias(padrao.afd, n))}.`));
+      }
+    }
+
     function vazio(frase) {
       pausar();
       atual = null;
@@ -501,6 +530,7 @@
       status.innerHTML = '';
       status.appendChild(el('span', 'rx-vazio', frase));
       er.textContent = '';
+      quantas.innerHTML = '';
       controles.hidden = true;
       if (teste) teste.caixa.hidden = true;
       if (viz) { viz.setGrafo({ states: [], edges: [] }); padraoNoViz = null; }
@@ -513,6 +543,7 @@
       if (teste) { teste.caixa.hidden = false; if (document.activeElement !== teste.input) teste.input.value = texto; }
       titulo.textContent = padrao.nome;
       er.textContent = `AFD mínimo com ${padrao.afd.n} estados, gerado da ER ${padrao.er}`;
+      mostrarQuantas(padrao, Array.from(texto).length);
       const mesmo = atual && atual.padrao === padrao;
       atual = { padrao, texto, resultado, letras: Array.from(texto), passos: passosLeitura(resultado), fita: null };
 
