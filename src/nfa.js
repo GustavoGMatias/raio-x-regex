@@ -8,51 +8,91 @@
 
   // ---------- Construção de Thompson ----------
   // Cada pedaço da AST vira um fragmento com um estado inicial e um final.
-  function construirAFN(ast) {
+  // A construção é feita num lugar só, que devolve o AFN e também os passos
+  // (um por nó, na ordem em que a árvore é montada: filhos antes do pai).
+  function montarAFN(ast) {
     const trans = [];
-    const novo = () => { trans.push({ eps: [], mov: [] }); return trans.length - 1; };
+    const origem = [];   // origem[s] = id do nó da AST que criou o estado s
+    const passos = [];
+    const novo = (no) => { trans.push({ eps: [], mov: [] }); origem.push(no.id); return trans.length - 1; };
     const eps = (de, para) => trans[de].eps.push(para);
+    const q = (s) => 'q' + s;
 
     function montar(no) {
+      let frag;
+      let texto;
+      let operador;
+      const criados = [];
+      const criar = () => { const s = novo(no); criados.push(s); return s; };
       switch (no.t) {
         case 'eps': {
-          const s = novo(), f = novo();
+          const s = criar(), f = criar();
           eps(s, f);
-          return { s, f };
+          frag = { s, f };
+          operador = 'ε';
+          texto = `Fragmento vazio: ${q(s)} liga a ${q(f)} por um movimento vazio (ε), sem ler nenhum caractere.`;
+          break;
         }
         case 'char': {
-          const s = novo(), f = novo();
+          const s = criar(), f = criar();
           trans[s].mov.push({ set: new Set(no.set), to: f });
-          return { s, f };
+          frag = { s, f };
+          operador = rotuloConjunto(no.set);
+          texto = `Fragmento para ${operador}: ${q(s)} lê ${operador} e vai para ${q(f)}.`;
+          break;
         }
         case 'cat': {
           const A = montar(no.a), B = montar(no.b);
           eps(A.f, B.s);
-          return { s: A.s, f: B.f };
+          frag = { s: A.s, f: B.f };
+          operador = 'concatenação';
+          texto = `Concatenação: o final do primeiro fragmento (${q(A.f)}) liga por ε ao início do segundo (${q(B.s)}). Não cria estados novos.`;
+          break;
         }
         case 'alt': {
-          const s = novo();
+          const s = criar();
           const A = montar(no.a), B = montar(no.b);
-          const f = novo();
+          const f = criar();
           eps(s, A.s); eps(s, B.s);
           eps(A.f, f); eps(B.f, f);
-          return { s, f };
+          frag = { s, f };
+          operador = '|';
+          texto = `União: o novo início ${q(s)} se divide por ε nos dois fragmentos (${q(A.s)} e ${q(B.s)}), e os finais deles (${q(A.f)} e ${q(B.f)}) se juntam no novo final ${q(f)}.`;
+          break;
         }
         case 'star': {
-          const s = novo();
+          const s = criar();
           const A = montar(no.a);
-          const f = novo();
+          const f = criar();
           eps(s, A.s); eps(s, f);
           eps(A.f, A.s); eps(A.f, f);
-          return { s, f };
+          frag = { s, f };
+          operador = '*';
+          texto = `Estrela: o novo início ${q(s)} pode pular o fragmento (ε direto para ${q(f)}) ou entrar nele (${q(A.s)}); ao terminar, ${q(A.f)} volta ao início do fragmento para repetir ou sai para ${q(f)}.`;
+          break;
         }
         default:
           throw new Error(`nó de AST desconhecido: ${no.t}`);
       }
+      passos.push({ noId: no.id, operador, texto, estados: criados });
+      return frag;
     }
 
     const { s, f } = montar(ast);
-    return { n: trans.length, start: s, accept: f, trans };
+    return { afn: { n: trans.length, start: s, accept: f, trans, origem }, passos };
+  }
+
+  function construirAFN(ast) {
+    return montarAFN(ast).afn;
+  }
+
+  // A construção fragmento por fragmento: [ { noId, operador, texto, estados } ].
+  //   noId:     id do nó da AST que está sendo construído
+  //   operador: 'ε', o conjunto de caracteres (ex.: 'a', '[a-z]'), 'concatenação', '|' ou '*'
+  //   texto:    frase curta em português dizendo o que acontece
+  //   estados:  estados do AFN criados nesse passo (vazio na concatenação, que só liga fragmentos)
+  function passosThompson(ast) {
+    return montarAFN(ast).passos;
   }
 
   // ---------- Simulação ----------
@@ -72,7 +112,8 @@
     return { estados: [...visto].sort((a, b) => a - b), arestas };
   }
 
-  // Devolve { inicial, passos, aceita }.
+  // Devolve { inicial, passos, aceita, morreuEm }.
+  //   morreuEm: índice do caractere em que não sobrou nenhum estado ativo, ou -1
   //   inicial: estados ativos antes de ler qualquer símbolo (fecho-ε do início)
   //   passos[k] (um por caractere lido, até a cadeia morrer):
   //     ch:      o caractere lido
@@ -99,7 +140,8 @@
       ativos = fc.estados;
       if (ativos.length === 0) break;
     }
-    return { inicial: ini.estados, passos, aceita: ativos.includes(afn.accept) };
+    const morreuEm = ativos.length === 0 ? passos.length - 1 : -1;
+    return { inicial: ini.estados, passos, aceita: ativos.includes(afn.accept), morreuEm };
   }
 
   // ---------- Grafo para o desenho ----------
@@ -157,7 +199,7 @@
     return { states, edges };
   }
 
-  const api = { construirAFN, fechoEps, tracoAFN, grafoAFN, rotuloConjunto };
+  const api = { construirAFN, passosThompson, fechoEps, tracoAFN, grafoAFN, rotuloConjunto };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else { window.Raio = window.Raio || {}; Object.assign(window.Raio, api); }
 })();
