@@ -1,79 +1,80 @@
-/* Estilo base do Raio-X de Regex. As cores ficam em variáveis para o modo claro/escuro. */
+/* Estilo base do Raio-X de Regex. As cores ficam em variáveis para o modo claro/escuro.
+   Paleta do grupo (escolhida pela Luciana): creme #f6eedf, azul #3760f9, tinta #17161b e lima #d2fc59. */
 
 :root {
-  --fundo: #f5f6f9;
-  --superficie: #ffffff;
-  --borda: #dde1ea;
-  --texto: #1b2130;
-  --mudo: #667089;
-  --primaria: #0f9b8e;
-  --primaria-texto: #ffffff;
-  --erro: #d13438;
+  --fundo: #f6eedf;
+  --superficie: #fffaf1;
+  --borda: #17161b2e;
+  --texto: #17161b;
+  --mudo: #5d574c;
+  --primaria: #3760f9;
+  --primaria-texto: #f6eedf;
+  --erro: #c2261d;
   --raio: 10px;
 
-  --viz-fundo: #fbfcfe;
-  --viz-no: #ffffff;
-  --viz-borda: #4a5570;
-  --viz-texto: #1b2130;
-  --viz-aresta: #9aa5bd;
-  --viz-rotulo: #3a4459;
-  --viz-rotulo-fundo: #eef1f6;
-  --viz-ativo: #0f9b8e;
-  --viz-destaque: #e07a1f;
-  --viz-morto: #d13438;
-  --viz-legenda-fundo: rgba(255, 255, 255, 0.92);
+  --viz-fundo: #fffaf1;
+  --viz-no: #fffaf1;
+  --viz-borda: #17161b;
+  --viz-texto: #17161b;
+  --viz-aresta: #17161b80;
+  --viz-rotulo: #17161b;
+  --viz-rotulo-fundo: #f6eedf;
+  --viz-ativo: #3760f9;
+  --viz-destaque: #17161b;
+  --viz-morto: #c2261d;
+  --viz-legenda-fundo: rgba(255, 250, 241, 0.92);
 
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-tema="claro"]) {
-    --fundo: #0b0f18;
-    --superficie: #131a27;
-    --borda: #263046;
-    --texto: #e6ebf5;
-    --mudo: #8b97b0;
-    --primaria: #2ec4b6;
-    --primaria-texto: #062a26;
-    --erro: #ff6b6b;
+    --fundo: #17161b;
+    --superficie: #211f27;
+    --borda: #f6eedf2e;
+    --texto: #f6eedf;
+    --mudo: #b9b1a3;
+    --primaria: #3760f9;
+    --primaria-texto: #f6eedf;
+    --erro: #ff8a7a;
 
-    --viz-fundo: #0f1420;
-    --viz-no: #1c2333;
-    --viz-borda: #8b97b0;
-    --viz-texto: #e6ebf5;
-    --viz-aresta: #4d5975;
-    --viz-rotulo: #c9d2e3;
-    --viz-rotulo-fundo: #161d2c;
-    --viz-ativo: #2ec4b6;
-    --viz-destaque: #f4a259;
-    --viz-morto: #ff5a5f;
-    --viz-legenda-fundo: rgba(15, 20, 32, 0.88);
+    --viz-fundo: #211f27;
+    --viz-no: #211f27;
+    --viz-borda: #f6eedf;
+    --viz-texto: #f6eedf;
+    --viz-aresta: #f6eedf80;
+    --viz-rotulo: #f6eedf;
+    --viz-rotulo-fundo: #17161b;
+    --viz-ativo: #d2fc59;
+    --viz-destaque: #3760f9;
+    --viz-morto: #ff8a7a;
+    --viz-legenda-fundo: rgba(23, 22, 27, 0.88);
 
     color-scheme: dark;
   }
 }
 
 :root[data-tema="escuro"] {
-  --fundo: #0b0f18;
-  --superficie: #131a27;
-  --borda: #263046;
-  --texto: #e6ebf5;
-  --mudo: #8b97b0;
-  --primaria: #2ec4b6;
-  --primaria-texto: #062a26;
-  --erro: #ff6b6b;
+  --fundo: #17161b;
+  --superficie: #211f27;
+  --borda: #f6eedf2e;
+  --texto: #f6eedf;
+  --mudo: #b9b1a3;
+  --primaria: #3760f9;
+  --primaria-texto: #f6eedf;
+  --erro: #ff8a7a;
 
-  --viz-fundo: #0f1420;
-  --viz-no: #1c2333;
-  --viz-borda: #8b97b0;
-  --viz-texto: #e6ebf5;
-  --viz-aresta: #4d5975;
-  --viz-rotulo: #c9d2e3;
-  --viz-rotulo-fundo: #161d2c;
-  --viz-ativo: #2ec4b6;
-  --viz-destaque: #f4a259;
-  --viz-morto: #ff5a5f;
-  --viz-legenda-fundo: rgba(15, 20, 32, 0.88);
+  --viz-fundo: #211f27;
+  --viz-no: #211f27;
+  --viz-borda: #f6eedf;
+  --viz-texto: #f6eedf;
+  --viz-aresta: #f6eedf80;
+  --viz-rotulo: #f6eedf;
+  --viz-rotulo-fundo: #17161b;
+  --viz-ativo: #d2fc59;
+  --viz-destaque: #3760f9;
+  --viz-morto: #ff8a7a;
+  --viz-legenda-fundo: rgba(23, 22, 27, 0.88);
 
   color-scheme: dark;
 }
@@ -85,7 +86,7 @@ html, body { margin: 0; }
 body {
   background: var(--fundo);
   color: var(--texto);
-  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font: 15px/1.5 "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   min-height: 100vh;
 }
 
@@ -269,3 +270,62 @@ button.botao:focus-visible { outline: 2px solid var(--primaria); outline-offset:
 .lab-tabelas { display: grid; gap: 8px; overflow-x: auto; }
 .lab-empilhado .painel3-visoes { grid-template-columns: 1fr; }
 .lab-empilhado .painel3-visao .viz { height: 360px; }
+
+/* ----- Visual do grupo no Laboratório e no Duelo -----
+   Mesmo padrão das abas Chat, Formulário e Desafio: título grosso e condensado em azul,
+   cartões com contorno em tinta e cantos bem redondos, botões e campos em pílula.
+   Só aparência: nenhuma regra muda a lógica do lab.js ou do duelo.js.
+   ("body" na frente porque o Duelo injeta o próprio CSS depois deste arquivo.) */
+
+body .lab, body .duelo { max-width: 1120px; gap: 20px; }
+
+/* O primeiro cartão do Laboratório e a abertura do Duelo viram o cabeçalho da aba. */
+body .lab > .cartao:first-child { background: transparent; border: 0; padding: 0 0 8px; }
+body .lab > .cartao:first-child h2,
+body .duelo > div:first-child h2 {
+  margin: 0 0 10px; color: var(--primaria);
+  font: 800 clamp(40px, 6vw, 72px)/0.92 "Bricolage Grotesque", system-ui, sans-serif;
+  font-stretch: 75%; letter-spacing: -0.01em; text-transform: uppercase;
+}
+body .lab > .cartao:first-child > .mudo,
+body .duelo > div:first-child .mudo { font-size: 18px; color: var(--texto); max-width: 60ch; }
+
+body .lab .cartao, body .duelo .cartao {
+  background: var(--superficie); border: 1.5px solid var(--texto); border-radius: 28px; padding: 22px 26px;
+}
+body .lab > .cartao:first-child { border: 0; }
+body .lab .lab-secao h3, body .duelo h3 {
+  /* sem caixa alta: os subtítulos têm ERs, e (a+)+b em maiúscula vira outra ER */
+  font: 800 28px/1.05 "Bricolage Grotesque", system-ui, sans-serif; font-stretch: 75%;
+  color: var(--primaria); margin: 0 0 6px;
+}
+
+/* Botões em pílula: contorno azul; o principal, cheio. */
+body .lab button, body .duelo button {
+  font: 600 14px "Bricolage Grotesque", system-ui, sans-serif; border-radius: 999px; padding: 8px 18px;
+  border: 1.5px solid var(--primaria); background: transparent; color: var(--primaria);
+}
+body .lab button.lab-principal, body .duelo button.principal {
+  background: var(--primaria); color: var(--primaria-texto); border-color: var(--primaria); font-size: 15px; padding: 9px 22px;
+}
+body .lab button.chip, body .lab .lab-chips button { border-color: var(--texto); color: var(--texto); }
+body .lab button.lab-no { border: 0; border-radius: 6px; padding: 2px 4px; color: var(--texto); }
+body .lab button:hover, body .duelo button:hover { filter: none; background: color-mix(in srgb, var(--primaria) 10%, transparent); }
+body .lab button.lab-principal:hover, body .duelo button.principal:hover { background: var(--primaria); filter: brightness(1.08); }
+
+/* Campos em pílula, com a fonte mono do grupo. */
+body .lab input.mono, body .duelo input {
+  font: 16px "Atkinson Hyperlegible Mono", ui-monospace, monospace; border-radius: 999px; padding: 9px 16px;
+  border: 1.5px solid var(--borda); background: var(--superficie); color: var(--texto);
+}
+body .lab input.mono:focus, body .duelo input:focus { outline: none; border-color: var(--primaria); }
+body .duelo label { color: var(--texto); font-weight: 600; }
+
+/* Detalhes: passos, árvore, placar do Duelo. */
+body .lab .lab-passo { border-left-color: var(--primaria); background: var(--fundo); }
+body .lab .lab-arvore, body .lab .viz { border-radius: 18px; border-color: var(--borda); }
+body .duelo .numero { font: 800 44px/1 "Bricolage Grotesque", system-ui, sans-serif; font-stretch: 75%; }
+body .duelo .barra { border-radius: 999px; }
+body .duelo .barra > i { background: var(--primaria); }
+body .duelo .veredito.ok { color: var(--primaria); }
+code, pre, kbd, input.mono { font-family: "Atkinson Hyperlegible Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }

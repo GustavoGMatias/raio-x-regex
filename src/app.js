@@ -9,6 +9,7 @@
   const ABAS = [
     { id: 'chat', titulo: 'Chat', funcao: 'montarChat', dono: 'Parte 3 (Luciana)' },
     { id: 'form', titulo: 'Formulário', funcao: 'montarForm', dono: 'Parte 3 (Luciana)' },
+    { id: 'desafio', titulo: 'Desafio', funcao: 'montarDesafio', dono: 'Parte 3 (Luciana)' },
     { id: 'lab', titulo: 'Laboratório', funcao: 'montarLab', dono: 'Parte 4 (Pierre)' },
     { id: 'duelo', titulo: 'Duelo', funcao: 'montarDuelo', dono: 'Parte 1 (Gustavo)' },
   ];
