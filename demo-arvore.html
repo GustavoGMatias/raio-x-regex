@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demo da árvore sintática</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, sans-serif; margin: 24px; max-width: 1100px; }
+    .linha { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+    input { font: 16px ui-monospace, monospace; padding: 6px 8px; min-width: 260px; }
+    button { padding: 6px 10px; }
+    #arvore { border: 1px solid #8884; border-radius: 8px; padding: 8px; }
+    #saida { font-family: ui-monospace, monospace; margin-top: 12px; white-space: pre-wrap; }
+    .erro { color: #d33; }
+  </style>
+</head>
+<body>
+  <h1>Árvore sintática</h1>
+  <p>Teste isolado de <code>src/arvore.js</code>. Clique num nó para selecioná-lo; o nó e a subárvore acendem.</p>
+
+  <div class="linha">
+    <input id="er" value="a(b|c)*" aria-label="Expressão regular">
+    <button id="desenhar">Desenhar com o parser</button>
+    <button id="exemplo">Árvore do contrato</button>
+    <button id="limpar">Limpar destaque</button>
+  </div>
+  <div id="arvore"></div>
+  <div id="saida"></div>
+
+  <script src="src/parser.js"></script>
+  <script src="src/dfa.js"></script>
+  <script src="src/arvore.js"></script>
+  <script>
+    // Árvore de a(b|c)* escrita à mão, igual à do docs/CONTRATOS.md.
+    const EXEMPLO = {
+      id: 1, t: 'cat', trecho: [0, 7],
+      a: { id: 2, t: 'char', set: new Set(['a']), trecho: [0, 1] },
+      b: { id: 3, t: 'star', trecho: [1, 7],
+        a: { id: 4, t: 'alt', trecho: [2, 5],
+          a: { id: 5, t: 'char', set: new Set(['b']), trecho: [2, 3] },
+          b: { id: 6, t: 'char', set: new Set(['c']), trecho: [4, 5] } } },
+    };
+
+    const caixa = document.getElementById('arvore');
+    const saida = document.getElementById('saida');
+    let arv = null;
+
+    function mostrar(ast, er) {
+      arv = Raio.montarArvore(caixa, ast, {
+        er,
+        aoSelecionar(id, subarvore) {
+          arv.destacar(subarvore);
+          saida.textContent = `aoSelecionar(${id}) → subárvore: [${subarvore.join(', ')}]`;
+        },
+      });
+      saida.textContent = '';
+    }
+
+    document.getElementById('exemplo').onclick = () => {
+      document.getElementById('er').value = 'a(b|c)*';
+      mostrar(EXEMPLO, 'a(b|c)*');
+    };
+    document.getElementById('desenhar').onclick = () => {
+      const er = document.getElementById('er').value;
+      try { mostrar(Raio.parse(er), er); }
+      catch (e) { saida.innerHTML = `<span class="erro">${e.message}</span>`; }
+    };
+    document.getElementById('er').onkeydown = (e) => { if (e.key === 'Enter') document.getElementById('desenhar').click(); };
+    document.getElementById('limpar').onclick = () => { arv && arv.destacar([]); saida.textContent = ''; };
+
+    mostrar(EXEMPLO, 'a(b|c)*');
+  </script>
+</body>
+</html>
