@@ -39,3 +39,31 @@ test('varrer com padrões reais: +55 e placa minúscula', () => {
 test('varrer com padrões reais: placa colada não destaca', () => {
   assert.deepStrictEqual(varrer('ABC1D234', comAFD), []);
 });
+
+test('CEP contra telefone: 8 dígitos sem hífen viram telefone (vem antes na lista)', () => {
+  const texto = 'liga 34567890 ou vai no CEP 01310-100';
+  assert.deepStrictEqual(resumo(texto, varrer(texto, comAFD)), [['telefone', '34567890'], ['CEP', '01310-100']]);
+});
+
+test('CEP contra telefone: se o CEP viesse antes, ele ganharia', () => {
+  const cep = comAFD.find((p) => p.nome === 'CEP');
+  const tel = comAFD.find((p) => p.nome === 'telefone');
+  const texto = '34567890';
+  assert.deepStrictEqual(resumo(texto, varrer(texto, [cep, tel])), [['CEP', '34567890']]);
+});
+
+test('varrer com padrões reais: uma mensagem com tudo', () => {
+  const texto = 'Oi! Meu CPF é 123.456.789-09, nasci em 5/3/2001 e paguei R$ 1.234,56. '
+    + 'Manda pra luciana@ufx.edu.br ou veja https://ufx.br/lfc. #automação';
+  assert.deepStrictEqual(resumo(texto, varrer(texto, comAFD)), [
+    ['CPF', '123.456.789-09'], ['data', '5/3/2001'], ['valor', 'R$ 1.234,56'],
+    ['e-mail', 'luciana@ufx.edu.br'], ['link', 'https://ufx.br/lfc'], ['hashtag', '#automação'],
+  ]);
+});
+
+test('todo padrão tem nome, ER, cor e exemplos', () => {
+  for (const p of padroes) {
+    assert.ok(p.nome && p.er && /^#[0-9a-f]{6}$/.test(p.cor) && p.exemplos.length && p.naoExemplos.length, p.nome);
+  }
+  assert.strictEqual(new Set(padroes.map((p) => p.nome)).size, padroes.length, 'nomes repetidos');
+});
