@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demo do Painel</title>
+  <link rel="stylesheet" href="src/style.css">
+  <style>
+    .linha { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+    .linha input { width: 220px; }
+    .resultado { font-weight: 600; }
+  </style>
+</head>
+<body>
+  <header class="topo"><div class="marca"><span class="logo" aria-hidden="true"></span>Demo do Painel (Parte 4)</div></header>
+  <main>
+    <section class="cartao">
+      <p class="mudo" style="margin-top:0">
+        Exemplo do contrato: <code>(a|b)*ab</code>, com o AFN, o AFD dos subconjuntos e o AFD mínimo escritos à mão.
+        Clique num estado para ver a sincronização.
+      </p>
+      <div class="linha">
+        <input id="cadeia" class="mono" value="bbab" aria-label="Cadeia">
+        <button class="botao primario" id="rodar">Executar nas três</button>
+        <span class="resultado" id="resultado"></span>
+      </div>
+      <div id="painel"></div>
+    </section>
+  </main>
+
+  <script src="src/parser.js"></script>
+  <script src="src/nfa.js"></script>
+  <script src="src/viz3d.js"></script>
+  <script src="src/painel.js"></script>
+  <script>
+    const S = (...x) => new Set(x);
+    const M = (o) => new Map(Object.entries(o));
+
+    const afn = {
+      n: 4, start: 0, accept: 3,
+      trans: [
+        { eps: [1], mov: [] },
+        { eps: [], mov: [{ set: S('a', 'b'), to: 1 }, { set: S('a'), to: 2 }] },
+        { eps: [], mov: [{ set: S('b'), to: 3 }] },
+        { eps: [], mov: [] },
+      ],
+    };
+    const afd = {
+      n: 4, start: 0, aceita: S(3),
+      trans: [M({ a: 1, b: 2 }), M({ a: 1, b: 3 }), M({ a: 1, b: 2 }), M({ a: 1, b: 2 })],
+      subconjuntos: [[0, 1], [1, 2], [1], [1, 3]],
+    };
+    const min = {
+      n: 3, start: 0, aceita: S(2),
+      trans: [M({ a: 1, b: 0 }), M({ a: 1, b: 2 }), M({ a: 1, b: 0 })],
+      classes: [[0, 2], [1], [3]],
+    };
+
+    const painel = Raio.montarPainel(document.getElementById('painel'), { afn, afd, min, ast: null });
+    document.getElementById('rodar').onclick = async () => {
+      const cadeia = document.getElementById('cadeia').value;
+      const out = document.getElementById('resultado');
+      out.textContent = '';
+      const r = await painel.executar(cadeia);
+      const fala = (b) => (b ? 'aceita' : 'rejeita');
+      out.textContent = `AFN ${fala(r.afn)} · AFD ${fala(r.afd)} · mínimo ${fala(r.min)}`;
+    };
+  </script>
+</body>
+</html>

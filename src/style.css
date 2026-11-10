@@ -209,3 +209,29 @@ button.botao:focus-visible { outline: 2px solid var(--primaria); outline-offset:
   main { padding: 16px; }
   .viz { height: 320px; }
 }
+
+/* ----- Painel com as três visões (painel.js) ----- */
+
+.painel3-visoes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.painel3-visao header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.painel3-visao h3 { margin: 0; font-size: 15px; }
+.painel3-contagem { font-size: 13px; }
+.painel3-visao .viz { height: 380px; }
+
+.painel3-info { margin: 10px 2px 0; min-height: 1.5em; }
+
+@media (max-width: 1000px) {
+  .painel3-visoes { grid-template-columns: 1fr; }
+  .painel3-visao .viz { height: 320px; }
+}

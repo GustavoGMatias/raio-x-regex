@@ -70,8 +70,14 @@
     const SEP = 1.1; // distância entre camadas
     for (const [d, lista] of camadas) {
       const k = lista.length;
-      const raio = k === 1 ? 0 : 0.45 * Math.sqrt(k);
       lista.forEach((id, i) => {
+        if (k === 1) {
+          // camada com um estado só: zigue-zague, para a cadeia não virar uma reta
+          // (numa reta, as transições de volta passariam por cima dos estados do meio)
+          pos.set(id, [d * SEP, d % 2 ? 0.45 : -0.45, 0.35 * Math.sin(d * 1.3) + (sorteio() - 0.5) * 0.1]);
+          return;
+        }
+        const raio = 0.5 * Math.sqrt(k);
         const ang = (i / k) * TAU + d * 0.9;
         pos.set(id, [
           d * SEP,
