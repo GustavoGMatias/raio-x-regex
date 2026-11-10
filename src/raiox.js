@@ -131,6 +131,14 @@
   .rx-fita .rx-estado.visto { background: #f6eedf26; }
   .rx-fita .rx-estado.atual { background: var(--lima); color: var(--tinta); border-color: var(--lima); font-weight: 700; }
   .rx-fita .rx-estado.morto.atual { background: var(--rosa); border-color: var(--rosa); }
+
+  /* Elementos escondidos somem de verdade (o display: flex de alguns ganharia do hidden). */
+  .rx-tema [hidden], .rx-raiox [hidden] { display: none !important; }
+
+  /* Ampliado: o cartão ocupa a tela toda, para autômatos grandes. */
+  .rx-raiox.rx-grande { position: fixed !important; inset: 16px; top: 16px; z-index: 1000; overflow: auto;
+    box-shadow: 0 0 0 100vmax #17161b99; }
+  .rx-raiox.rx-grande canvas { height: max(360px, calc(100vh - 330px)) !important; }
   `;
 
   function injetarEstilo() {
@@ -293,7 +301,9 @@
     const bPasso = botao('passo ›');
     const bRotulos = botao('letra/dígito', 'rx-rotulos');
     bRotulos.title = 'Trocar os rótulos das setas entre palavras e a notação da ER';
-    controles.append(bRecomecar, bTocar, bPasso, bRotulos);
+    const bAmpliar = botao('⤢ ampliar');
+    bAmpliar.title = 'Ver o autômato em tela cheia (Esc fecha)';
+    controles.append(bRecomecar, bTocar, bPasso, bRotulos, bAmpliar);
     const agora = el('p', 'rx-agora');
     agora.setAttribute('aria-live', 'polite');
     const status = el('p', 'rx-status');
@@ -317,9 +327,11 @@
     painel.append(quantas, er);
 
     let viz = null;
+    let tela = null;          // o canvas do 3D
     let enquadrar = () => {};
     if (usa3D) {
       const canvas = el('canvas');
+      tela = canvas;
       canvas.setAttribute('role', 'img');
       canvas.setAttribute('aria-label', 'Autômato em 3D. Arraste para girar, use a rodinha para aproximar.');
       area.appendChild(canvas);
@@ -484,6 +496,17 @@
       atualizarBotoes();
     };
 
+    // Tela cheia: liga/desliga a classe; o Viz3D e o enquadrar se ajustam ao novo tamanho.
+    function ampliar(sim) {
+      painel.classList.toggle('rx-grande', sim);
+      bAmpliar.textContent = sim ? '✕ fechar' : '⤢ ampliar';
+      bAmpliar.setAttribute('aria-pressed', String(sim));
+    }
+    bAmpliar.onclick = () => ampliar(!painel.classList.contains('rx-grande'));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && painel.classList.contains('rx-grande')) ampliar(false);
+    });
+
     function testar(cadeiaNova) {
       if (!atual) return;
       const padrao = atual.padrao;
@@ -533,6 +556,8 @@
       quantas.innerHTML = '';
       controles.hidden = true;
       if (teste) teste.caixa.hidden = true;
+      area.hidden = true;
+      ampliar(false);
       if (viz) { viz.setGrafo({ states: [], edges: [] }); padraoNoViz = null; }
       else area.innerHTML = '';
     }
@@ -540,6 +565,9 @@
     function mostrar({ padrao, texto, resultado, modo = 'tudo' }) {
       pausar();
       controles.hidden = false;
+      area.hidden = false;
+      // Autômato grande ganha mais altura (e sempre dá para ampliar em tela cheia).
+      if (tela) tela.style.height = padrao.afd.n <= 10 ? '300px' : padrao.afd.n <= 20 ? '380px' : '460px';
       if (teste) { teste.caixa.hidden = false; if (document.activeElement !== teste.input) teste.input.value = texto; }
       titulo.textContent = padrao.nome;
       er.textContent = `AFD mínimo com ${padrao.afd.n} estados, gerado da ER ${padrao.er}`;
