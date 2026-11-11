@@ -11,16 +11,19 @@
     ? Object.assign({}, require('./parser'), require('./nfa'), require('./dfa'))
     : window.Raio;
 
-  function compilar(er) {
+  // Teto de estados do AFD (acima disso o desenho 3D também ficaria inutilizável).
+  const LIMITE_AFD = 600;
+
+  function compilar(er, opcoes = {}) {
     const ast = R.parse(er);               // lança ErroER com `pos` se a ER for inválida
     const afn = R.construirAFN(ast);
-    const afd = R.afnParaAFD(afn);
+    const afd = R.afnParaAFD(afn, { limite: opcoes.limiteAFD || LIMITE_AFD }); // lança ErroLimite
     const min = R.minimizar(afd);
     return { er, ast, afn, afd, min };
   }
 
   if (emNode) {
-    module.exports = { compilar };
+    module.exports = { compilar, LIMITE_AFD };
     return;
   }
 

@@ -55,6 +55,7 @@
   // Mensagem de erro de ER com um ^ apontando a posição.
   function formatarErro(er, e) {
     if (e && e.name === 'ErroER') return `${e.message}\n${er}\n${' '.repeat(e.pos)}^`;
+    if (e && e.name === 'ErroLimite') return 'Expressão pesada demais: ' + e.message;
     return 'Erro inesperado: ' + (e && e.message || e);
   }
 

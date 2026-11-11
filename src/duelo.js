@@ -8,15 +8,17 @@
 //   backtracking: quantas vezes o matcher visitou um nó da árvore (casarBacktracking.passos)
 //   AFN: soma dos tamanhos dos conjuntos de estados ativos ao longo da leitura.
 //        É o trabalho da simulação, que cresce linearmente com a cadeia.
+//   AFD mínimo: um passo por caractere lido (para quando a cadeia morre).
 
 (function () {
   const ehNode = typeof module !== 'undefined' && module.exports;
   const R = ehNode
-    ? Object.assign({}, require('./parser'), require('./nfa'), require('./backtrack'))
+    ? Object.assign({}, require('./parser'), require('./nfa'), require('./backtrack'), require('./dfa'))
     : window.Raio;
 
   const LIMITE_PADRAO = 100000;
   const LIMITE_MAXIMO = 20000000;
+  const LIMITE_AFD = 600; // mesmo teto do compilar() do main.js
 
   // ---------- Parte pura ----------
 
@@ -27,11 +29,21 @@
     const afn = R.construirAFN(ast);
     const traco = R.tracoAFN(afn, cadeia);
     const trabalho = traco.inicial.length + traco.passos.reduce((s, p) => s + p.depois.length, 0);
-    return {
+    const r = {
       backtracking: { aceita: bt.aceita, passos: bt.passos, estourou: bt.estourou },
       afn: { aceita: traco.aceita, trabalho, estados: afn.n },
+      afd: null,
       limite,
     };
+    // O AFD mínimo pode não caber (explosão dos subconjuntos): nesse caso a coluna some.
+    try {
+      const min = R.minimizar(R.afnParaAFD(afn, { limite: LIMITE_AFD }));
+      const ex = R.executarAFD(min, cadeia);
+      r.afd = { aceita: ex.aceita, passos: ex.caminho.length - 1 + (ex.morreuEm >= 0 ? 1 : 0), estados: min.n };
+    } catch (e) {
+      if (!(e && e.name === 'ErroLimite')) throw e;
+    }
+    return r;
   }
 
   // Mesma ER com cadeias de tamanhos diferentes. montarCadeia(n) devolve a cadeia de tamanho n.
@@ -147,15 +159,18 @@
       let r;
       try { r = duelar(inEr.value, inCadeia.value, lerLimite()); }
       catch (e) { mostrarErro(e); placar.textContent = ''; return; }
-      const { backtracking: b, afn: a, limite } = r;
-      const max = Math.max(b.passos, a.trabalho);
+      const { backtracking: b, afn: a, afd: d, limite } = r;
+      const max = Math.max(b.passos, a.trabalho, d ? d.passos : 0);
       const vb = b.estourou ? ['Desistiu: estourou o limite', 'estouro'] : b.aceita ? ['Aceita', 'ok'] : ['Rejeita', 'nao'];
       const va = a.aceita ? ['Aceita', 'ok'] : ['Rejeita', 'nao'];
       placar.textContent = '';
       placar.append(
         cartaoMotor('Backtracking', vb[0], vb[1], fmt(b.passos), b.estourou ? `passos (limite: ${fmt(limite)})` : 'passos', b.passos, max, b.estourou),
-        cartaoMotor('AFN (simulação)', va[0], va[1], fmt(a.trabalho), `estados processados (o AFN tem ${a.estados} estados)`, a.trabalho, max, false));
-      if (!b.estourou && b.aceita !== a.aceita) {
+        cartaoMotor('AFN (simulação)', va[0], va[1], fmt(a.trabalho), `estados processados (o AFN tem ${a.estados} estados)`, a.trabalho, max, false),
+        d
+          ? cartaoMotor('AFD mínimo', d.aceita ? 'Aceita' : 'Rejeita', d.aceita ? 'ok' : 'nao', fmt(d.passos), `passos, um por caractere (o AFD mínimo tem ${d.estados} estados)`, d.passos, max, false)
+          : el('div', { class: 'cartao motor' }, el('h3', { text: 'AFD mínimo' }), el('p', { class: 'mudo', text: 'Grande demais para construir aqui (explosão dos subconjuntos).' })));
+      if ((!b.estourou && b.aceita !== a.aceita) || (d && d.aceita !== a.aceita)) {
         placar.append(el('p', { class: 'erro', text: 'Os dois motores discordaram. Isso não deveria acontecer: avise a Parte 1.' }));
       }
     }
@@ -167,14 +182,15 @@
       escadaBox.hidden = false;
       escadaBox.textContent = '';
       const tbl = el('table', null,
-        el('thead', null, el('tr', null, el('th', { text: 'n (letras "a")' }), el('th', { text: 'Backtracking (passos)' }), el('th', { text: 'AFN (estados processados)' }))),
+        el('thead', null, el('tr', null, el('th', { text: 'n (letras "a")' }), el('th', { text: 'Backtracking (passos)' }), el('th', { text: 'AFN (estados processados)' }), el('th', { text: 'AFD mínimo (passos)' }))),
         el('tbody', null, ...linhas.map((l) => el('tr', null,
           el('td', { text: String(l.n) }),
           el('td', { class: l.backtracking.estourou ? 'estouro' : '', text: l.backtracking.estourou ? `> ${fmt(l.limite)} (estourou)` : fmt(l.backtracking.passos) }),
-          el('td', { text: fmt(l.afn.trabalho) })))));
+          el('td', { text: fmt(l.afn.trabalho) }),
+          el('td', { text: l.afd ? fmt(l.afd.passos) : '—' })))));
       escadaBox.append(
         el('h3', { text: `Escada: ${ex.rotulo} contra "a" × n + "c"` }),
-        el('p', { class: 'mudo', text: 'Compare as duas colunas conforme n cresce: uma explode, a outra anda em linha reta.' }),
+        el('p', { class: 'mudo', text: 'Compare as colunas conforme n cresce: o backtracking explode, o AFN e o AFD andam em linha reta.' }),
         tbl);
     }
 
@@ -192,7 +208,7 @@
     container.append(el('div', { class: 'duelo' },
       el('div', null,
         el('h2', { text: 'Duelo: backtracking contra AFN' }),
-        el('p', { class: 'mudo', text: 'A mesma expressão e a mesma cadeia nos dois motores. Os dois dão a mesma resposta; o que muda é o custo.' })),
+        el('p', { class: 'mudo', text: 'A mesma expressão e a mesma cadeia no backtracking, no AFN e no AFD mínimo. Todos dão a mesma resposta; o que muda é o custo.' })),
       el('div', { class: 'cartao' },
         el('div', { class: 'linha' },
           el('label', null, 'Expressão regular', inEr),
@@ -207,7 +223,8 @@
       el('div', { class: 'cartao explica' },
         el('h3', { text: 'Por que a diferença?' }),
         el('p', { text: 'O backtracking tenta um caminho, e quando falha volta e tenta o próximo. Numa ER ambígua como (a+)+b, uma sequência de "a"s pode ser repartida entre o + de dentro e o de fora de 2^(n-1) maneiras, e como a cadeia termina em "c", todas falham, uma por uma.' }),
-        el('p', { text: 'O AFN não escolhe: mantém todos os caminhos ao mesmo tempo como um conjunto de estados ativos, e esse conjunto nunca passa do número de estados do AFN. Por isso o trabalho dele cresce em linha reta com o tamanho da cadeia.' }))));
+        el('p', { text: 'O AFN não escolhe: mantém todos os caminhos ao mesmo tempo como um conjunto de estados ativos, e esse conjunto nunca passa do número de estados do AFN. Por isso o trabalho dele cresce em linha reta com o tamanho da cadeia.' }),
+        el('p', { text: 'O AFD vai além: já fez essa conta antes (na construção dos subconjuntos), então lê um caractere por passo, sem nenhuma escolha na hora.' }))));
 
     usarExemplo(EXEMPLOS[0]);
   }

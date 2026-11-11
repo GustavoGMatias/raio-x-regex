@@ -192,9 +192,11 @@
   };
   function rotuloAmigavel(r) {
     if (AMIGAVEIS[r]) return AMIGAVEIS[r];
-    if (/^\[0-9A-Z_a-z/.test(r)) return 'letra, dígito ou _'; // a classe da hashtag (com acentos)
-    const faixa = /^\[(\d)-(\d)\]$/.exec(r);                  // [1-9] vira "1 a 9"
-    if (faixa) return `${faixa[1]} a ${faixa[2]}`;
+    if (r.startsWith('[0-9A-Z_a-z')) return 'letra, dígito ou _'; // a classe da hashtag (com acentos)
+    const dig = (c) => c >= '0' && c <= '9';
+    if (r.length === 5 && r[0] === '[' && r[2] === '-' && r[4] === ']' && dig(r[1]) && dig(r[3])) {
+      return `${r[1]} a ${r[3]}`;                                  // [1-9] vira "1 a 9"
+    }
     return r;
   }
 

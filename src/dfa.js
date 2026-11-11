@@ -72,7 +72,15 @@
   // Cada estado do AFD é um CONJUNTO de estados do AFN: "todos os lugares onde o AFN
   // poderia estar ao mesmo tempo". Começa no fecho-ε do início e, para cada caractere,
   // calcula fecho-ε(moverConjunto(S, c)). Conjunto vazio = estado morto, que não é guardado.
-  function afnParaAFD(afn) {
+  // Um AFD pode ter até 2^n estados. `opcoes.limite` (padrão: sem limite) interrompe a
+  // construção com um ErroLimite quando o AFD passa desse tamanho; a interface usa
+  // isso para não congelar a página com ERs como (a|b)*a(a|b){18}.
+  class ErroLimite extends Error {
+    constructor(mensagem, limite) { super(mensagem); this.name = 'ErroLimite'; this.limite = limite; }
+  }
+
+  function afnParaAFD(afn, opcoes = {}) {
+    const limite = opcoes.limite || Infinity;
     // Só interessam os caracteres que aparecem em alguma transição do AFN.
     const simbolosSet = new Set();
     for (const t of afn.trans) for (const m of t.mov) for (const c of m.set) simbolosSet.add(c);
@@ -86,6 +94,9 @@
     function obter(S) {
       const k = chave(S);
       if (!indice.has(k)) {
+        if (subconjuntos.length >= limite) {
+          throw new ErroLimite(`o AFD passou de ${limite} estados (o AFN tem ${afn.n}): é a explosão exponencial da construção dos subconjuntos. Use uma expressão menor.`, limite);
+        }
         indice.set(k, subconjuntos.length);
         subconjuntos.push(S);
         trans.push(new Map());
@@ -307,7 +318,7 @@
   }
 
   const api = {
-    afnParaAFD, minimizar, executarAFD, motivo, grafoAFD, conferirEquivalencia, aceitaAFN,
+    afnParaAFD, ErroLimite, minimizar, executarAFD, motivo, grafoAFD, conferirEquivalencia, aceitaAFN,
     fechoConjunto, moverConjunto, rotulo, porDestino,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

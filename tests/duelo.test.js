@@ -40,3 +40,17 @@ test('todos os exemplos: as respostas concordam quando o backtracking termina', 
     }
   }
 });
+
+test('o AFD mínimo gasta um passo por caractere e concorda com os outros', () => {
+  const r = duelar('(a+)+b', 'a'.repeat(30) + 'c', 1000);
+  assert.ok(r.afd);
+  assert.equal(r.afd.aceita, r.afn.aceita);
+  assert.ok(r.afd.passos <= 32);                  // no máximo o tamanho da cadeia (+1 se morreu)
+  assert.ok(r.afd.estados >= 1);
+});
+
+test('ER cujo AFD estoura o teto: a coluna do AFD some, o resto continua', () => {
+  const r = duelar('(a|b)*a(a|b){15}', 'ab'.repeat(8), 1000);
+  assert.equal(r.afd, null);
+  assert.equal(typeof r.afn.aceita, 'boolean');
+});

@@ -181,3 +181,12 @@ test('fluxo completo: placa (Mercosul e antiga)', () => {
   for (const s of ['ABC1D23', 'ABC-1234', 'ABC1234']) assert.ok(executarAFD(min, s).aceita, s);
   for (const s of ['ABC1D234', 'AB1D23', 'abc1d23', 'ABC-1D23']) assert.ok(!executarAFD(min, s).aceita, s);
 });
+
+test('afnParaAFD: o limite de estados interrompe com ErroLimite', () => {
+  const { parse } = require('../src/parser');
+  const { construirAFN } = require('../src/nfa');
+  const { afnParaAFD, ErroLimite } = require('../src/dfa');
+  const afn = construirAFN(parse('(a|b)*a(a|b){10}'));
+  assert.throws(() => afnParaAFD(afn, { limite: 100 }), (e) => e instanceof ErroLimite && e.limite === 100);
+  assert.ok(afnParaAFD(afn).n > 2000);            // sem limite continua funcionando
+});
