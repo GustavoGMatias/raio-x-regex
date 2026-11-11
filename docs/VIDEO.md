@@ -6,15 +6,15 @@ O professor pediu: apresentar o projeto, comentar como foi o desenvolvimento e *
 
 1. **Abertura (10 s de demo, sem teoria):** o chat destacando placa e telefone sozinho. "Como ele sabe?"
 2. **Revelação:** abrir o autômato 3D lendo a mesma cadeia.
-3. **Demo central (Laboratório):** digitar \`a(b|c)*\` e percorrer, nesta ordem:
+3. **Demo central (Laboratório):** digitar `a(b|c)*` e percorrer, nesta ordem:
    1. Exibir a árvore sintática.
    2. Mostrar a construção de Thompson, passo a passo.
    3. Apresentar o AFN resultante.
    4. Converter e apresentar o AFD.
    5. Mostrar o AFD mínimo.
-   6. Testar \`abbc\`, acompanhando o caminho percorrido e explicando por que a cadeia é aceita.
+   6. Testar `abbc`, acompanhando o caminho percorrido e explicando por que a cadeia é aceita.
 
-   Esse é o momento principal do vídeo, então ensaiem bastante. Se houver tempo, testar também \`a\` para demonstrar que \`(b|c)*\` pode ocorrer zero vezes.
+   Esse é o momento principal do vídeo, então ensaiem bastante. Se houver tempo, testar também `a` para demonstrar que `(b|c)*` pode ocorrer zero vezes.
 4. **O que é o que estamos vendo:** ER, AFN, AFD, AFD mínimo, e por que isso é "linguagem regular".
 5. **Cada pessoa explica a sua parte** (1 a 2 minutos cada), com o código ou a tela aberta.
 6. **Aplicações e extras:** formulário (válido, incompleto, inválido) e, só dos que ficarem prontos, Duelo, comparação de ERs e contagem de cadeias.
@@ -32,6 +32,6 @@ O professor pediu: apresentar o projeto, comentar como foi o desenvolvimento e *
 ## Antes de gravar
 
 - [ ] A demo roda sem internet.
-- [ ] Os testes passam (\`node --test\`).
+- [ ] Os testes passam (`node --test`).
 - [ ] O README diz como rodar e declara o uso de LLM.
 - [ ] Cada pessoa treinou o seu trecho uma vez.

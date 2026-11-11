@@ -14,18 +14,17 @@ O ponto central do trabalho é que **o motor de expressões regulares é nosso**
 ER  →  AFN (Thompson)  →  AFD (subconjuntos)  →  AFD mínimo  →  simulação
 ```
 
-## O que o app tem (4 abas)
+## O que o app tem (5 abas)
 
 1. **Chat.** Conversa de mensagens em que placa, telefone, CPF, e-mail, link, data, CEP, valor em reais e hashtag são destacados sozinhos. Clicar num destaque abre o autômato daquele padrão e reproduz o trecho reconhecido.
 2. **Formulário.** Campos (CPF, placa, e-mail etc.) que mudam de cor enquanto a pessoa digita: **válido** (estado de aceitação), **incompleto** (estado vivo, ainda pode virar válido) ou **inválido** (estado morto). Mostra na prática o que é um estado morto.
-3. **Laboratório.** É a parte didática. O usuário digita qualquer ER (por exemplo `a(b|c)*`) e vê:
+3. **Desafio.** O app mostra uma cadeia, a pessoa escolhe se o autômato aceita ou rejeita, e ele revela a resposta e o motivo, lendo a cadeia símbolo por símbolo.
+4. **Laboratório.** É a parte didática. O usuário digita qualquer ER (por exemplo `a(b|c)*`) e vê:
    - a **árvore sintática** da expressão, com uma frase explicando cada operador;
    - a **construção de Thompson passo a passo**, fragmento por fragmento;
    - o **AFN, o AFD e o AFD mínimo em 3D, sincronizados**: clicar num estado do AFD acende no AFN os estados que ele representa, e clicar num nó da árvore acende o pedaço correspondente do AFN;
    - a **execução de uma cadeia símbolo por símbolo**, com as bolinhas se dividindo no AFN e o motivo de aceitar ou rejeitar.
-4. **Duelo.** Compara o nosso AFD com um matcher por backtracking numa ER problemática, como `(a+)+b`. O backtracking explode e o AFD continua instantâneo.
-
-Há ainda um **modo desafio** mínimo: o app mostra uma cadeia, a pessoa escolhe se o autômato aceita ou rejeita, e ele revela a resposta e o motivo.
+5. **Duelo.** Compara um matcher por backtracking com o nosso AFN e o AFD mínimo numa ER problemática, como `(a+)+b`. O backtracking explode (o contador de passos estoura o limite) e o AFN e o AFD continuam em linha reta.
 
 ## Padrões do chat e do formulário
 
@@ -64,7 +63,7 @@ Tecnicamente, a linguagem dos CPFs válidos é finita e, portanto, regular. Entr
 
 ## Tecnologia
 
-JavaScript puro, sem framework e sem etapa de build. Abre direto no navegador (`index.html`). Os testes rodam com o Node: `node --test`. O 3D é feito em `canvas`, com projeção própria, para funcionar offline na hora de gravar o vídeo.
+JavaScript puro, sem framework e sem etapa de build. Abre direto no navegador (`index.html`). Os testes rodam com o Node: `node --test tests/`. O reconhecimento é todo nosso: o `RegExp` do JavaScript não é usado no app, só nos testes, como oráculo para conferir que o nosso motor dá as mesmas respostas. O 3D é feito em `canvas`, com projeção própria, para funcionar offline na hora de gravar o vídeo.
 
 ## Estrutura do repositório
 
@@ -89,4 +88,6 @@ O roteiro do vídeo **não** deve ser gerado por LLM. Cada pessoa escreve e fala
 
 ## Como rodar
 
-_(preencher quando o projeto estiver pronto)_
+- **O app:** abra o `index.html` no navegador. Não precisa de servidor, de build nem de instalação. O visual usa fontes do Google Fonts; sem internet o site cai para a fonte do sistema e continua funcionando.
+- **Os testes:** com o Node 18 ou mais novo, na pasta do projeto, rode `node --test tests/`.
+- **Limites:** o Laboratório recusa expressões que gerariam um AFD com mais de 600 estados ou uma árvore com mais de 4000 nós, com uma mensagem explicando (é a explosão exponencial da construção dos subconjuntos, a mesma de que o vídeo fala).
