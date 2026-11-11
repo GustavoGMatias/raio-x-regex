@@ -98,9 +98,11 @@ O professor exige que o grupo diga se usou LLM e como. Cada pessoa descreve abai
 - Uma revisão geral do projeto e as correções dela: limites contra travamento do Laboratório, remoção do `RegExp` do código do app e a coluna do AFD no Duelo. A revisão incluiu um teste com expressões aleatórias comparando o motor com o `RegExp` do JS.
 
 **O que o Gustavo fez:**
-- Decidiu o escopo (seguir a versão ampla dos documentos) e como a aba Duelo funciona.
-- Pediu cada etapa, aprovou e mergeou os pull requests e cuidou do repositório no GitHub.
-- _(Gustavo: acrescente aqui, com suas palavras, o que você mesmo fez, leu, testou ou estudou. Só escreva o que for verdade.)_
+- Usou agentes de codificação (Claude) para gerar a maior parte do código do projeto, incluindo o parser, a construção de Thompson, o AFD e a interface, e pediu os testes automatizados que conferem o motor.
+- Definiu a ideia do projeto, a divisão em quatro partes independentes com contratos entre os módulos e as tarefas de cada integrante.
+- Revisou o resultado de cada etapa, rodou o aplicativo e os testes e conferiu o comportamento antes de aprovar.
+- Estudou os conceitos da sua parte (ER → árvore sintática, construção de Thompson, movimentos vazios e execução do AFN) para conseguir explicá-los no vídeo com as próprias palavras.
+- O roteiro do vídeo foi rascunhado com ajuda do Claude e depois reescrito por cada integrante com as próprias palavras.
 
 ### Parte 2, Parte 3 e Parte 4
 
