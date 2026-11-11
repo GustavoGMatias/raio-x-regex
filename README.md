@@ -102,7 +102,6 @@ O professor exige que o grupo diga se usou LLM e como. Cada pessoa descreve abai
 - Definiu a ideia do projeto, a divisão em quatro partes independentes com contratos entre os módulos e as tarefas de cada integrante.
 - Revisou o resultado de cada etapa, rodou o aplicativo e os testes e conferiu o comportamento antes de aprovar.
 - Estudou os conceitos da sua parte (ER → árvore sintática, construção de Thompson, movimentos vazios e execução do AFN) para conseguir explicá-los no vídeo com as próprias palavras.
-- O roteiro do vídeo foi rascunhado com ajuda do Claude e depois reescrito por cada integrante com as próprias palavras.
 
 ### Parte 2, Parte 3 e Parte 4
 
