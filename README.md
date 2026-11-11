@@ -82,9 +82,29 @@ raio-x-regex/
 
 ## Uso de ferramentas baseadas em LLM
 
-Preencher antes de gravar o vídeo, porque o professor exige que o grupo diga se usou e como: _(escrever aqui o que foi feito com ajuda de LLM e o que foi feito sem)_.
+O professor exige que o grupo diga se usou LLM e como. Cada pessoa descreve abaixo o uso na sua parte. O roteiro do vídeo **não** deve ser gerado por LLM: cada pessoa escreve e fala o seu trecho com as próprias palavras.
 
-O roteiro do vídeo **não** deve ser gerado por LLM. Cada pessoa escreve e fala o seu trecho com as próprias palavras.
+### Parte 1: Gustavo (parser, AFN, backtracking e Duelo)
+
+**Ferramenta:** Claude Code (assistente de IA da Anthropic), usado como agente dentro do repositório.
+
+**O que a IA fez (a maior parte do código da Parte 1):**
+- `src/parser.js`: o parser de expressões regulares, com `id` e `trecho` nos nós da árvore e mensagens de erro com posição.
+- `src/nfa.js`: a construção de Thompson, `tracoAFN`, `passosThompson` e `grafoAFN`.
+- `src/backtrack.js`: o matcher por backtracking com contador de passos e limite.
+- `src/explicacao.js` e `src/duelo.js` (a aba Duelo).
+- Os testes dessas partes (`tests/parser.test.js`, `nfa.test.js`, `backtrack.test.js`, `explicacao.test.js`, `duelo.test.js`), inclusive a comparação com o `RegExp` do JS usada como oráculo.
+- Como o Pierre ficou doente, a IA também escreveu o Laboratório (`src/lab.js`), o `src/main.js` e a ligação das abas no `index.html`, em cima do que o Pierre já tinha feito.
+- Uma revisão geral do projeto e as correções dela: limites contra travamento do Laboratório, remoção do `RegExp` do código do app e a coluna do AFD no Duelo. A revisão incluiu um teste com expressões aleatórias comparando o motor com o `RegExp` do JS.
+
+**O que o Gustavo fez:**
+- Decidiu o escopo (seguir a versão ampla dos documentos) e como a aba Duelo funciona.
+- Pediu cada etapa, aprovou e mergeou os pull requests e cuidou do repositório no GitHub.
+- _(Gustavo: acrescente aqui, com suas palavras, o que você mesmo fez, leu, testou ou estudou. Só escreva o que for verdade.)_
+
+### Parte 2, Parte 3 e Parte 4
+
+_(Sofia, Luciana e Pierre: descrevam aqui, cada um, o uso de LLM na sua parte.)_
 
 ## Como rodar
 
