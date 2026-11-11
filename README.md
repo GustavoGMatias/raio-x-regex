@@ -105,7 +105,15 @@ O professor exige que o grupo diga se usou LLM e como. Cada pessoa descreve abai
 
 ### Parte 2, Parte 3 e Parte 4
 
-_(Sofia, Luciana e Pierre: descrevam aqui, cada um, o uso de LLM na sua parte.)_
+### Parte 4: Luciana (scanner, formulário, cartão do Raio-X, contagem e Desafio)
+
+**Uso de IA:** Apoio pontual para estruturação mecânica de testes unitários repetitivos e formatação de dados textuais estáticos (descrições e contraexemplos das expressões regulares) junto com o design.
+
+**O que foi desenvolvido autonomamente:**
+- **Scanner e Precedência (`src/scanner.js`):** Implementação completa do algoritmo de varredura gulosa (*greedy* / `maisLongo`), incluindo as regras de borda de palavra (para evitar falsos positivos como `XABC1D23` em placas) e a ordenação de precedência entre padrões sobrepostos (garantindo que o telefone seja capturado antes do CEP, por exemplo).
+- **Validação de Formulários em Tempo Real (`src/form.js`):** Modelagem e lógica dos três estados do autômato aplicados à experiência do usuário (`válido`, `incompleto` e `inválido`), gerenciando a transição de estados caractere a caractere enquanto o usuário digita.
+- **Identidade Visual e UI/UX:** Concepção e direção de toda a identidade visual da aplicação, estruturando a paleta de cores temática (tons creme e azul), o design system e a consistência visual entre o laboratório teóricos, os duelos e as abas interativas.
+- **Integração do Chat (`src/chat.js`):** Validação e refinamento do destaque dinâmico de tokens no fluxo de mensagens.
 
 ## Como rodar
 
