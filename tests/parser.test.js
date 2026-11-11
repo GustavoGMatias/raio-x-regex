@@ -188,3 +188,25 @@ test('o trecho do texto da ER bate com o pedaço que o nó representa', () => {
   const alt = nos(ast).find((n) => n.t === 'alt');
   assert.equal(er.slice(...alt.trecho), 'ab|c');
 });
+
+// ---------- teto no tamanho da árvore ----------
+test('repetições aninhadas que explodem a árvore são recusadas rápido, com posição', () => {
+  const t0 = Date.now();
+  const e = erro('(a{100}){100}');
+  assert.ok(Date.now() - t0 < 1000, 'demorou demais para recusar');
+  assert.ok(e instanceof ErroER);
+  assert.match(e.message, /grande demais/);
+  assert.ok(e.pos >= 0);
+  assert.throws(() => parse('((a{100}){100}){100}'), ErroER);
+});
+
+test('o teto não atrapalha ERs razoáveis', () => {
+  for (const er of ['a{100}', '[a-z]{50}', '(ab|cd){20}', '((a{10}){10}){5}', '.{100}']) {
+    assert.doesNotThrow(() => parse(er), er);
+  }
+});
+
+test('depois de um erro de limite, o parser continua funcionando (contador reinicia)', () => {
+  assert.throws(() => parse('(a{100}){100}'), ErroER);
+  assert.doesNotThrow(() => parse('a(b|c)*'));
+});

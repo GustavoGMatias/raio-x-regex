@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const { EXEMPLOS, trechoDoNo, linhasDeExplicacao, resumoContagem, formatarErro } = require('../src/lab');
-const { compilar } = require('../src/main');
+const { compilar, LIMITE_AFD } = require('../src/main');
 const { explicar } = require('../src/explicacao');
 const { ErroER } = require('../src/parser');
 const { executarAFD } = require('../src/dfa');
@@ -49,4 +49,15 @@ test('resumoContagem e formatarErro', () => {
   const e = (() => { try { compilar('ab(cd'); } catch (x) { return x; } })();
   const txt = formatarErro('ab(cd', e);
   assert.match(txt, /ab\(cd\n {2}\^/);
+});
+
+test('compilar recusa rápido o que explodiria o AFD, com ErroLimite', () => {
+  const t0 = Date.now();
+  let erro;
+  try { compilar('(a|b)*a(a|b){18}'); } catch (e) { erro = e; }
+  assert.ok(erro && erro.name === 'ErroLimite');
+  assert.ok(Date.now() - t0 < 2000);
+  assert.match(formatarErro('(a|b)*a(a|b){18}', erro), /Expressão pesada demais.*explosão/);
+  assert.doesNotThrow(() => compilar('(a|b)*a(a|b){6}'));   // 129 estados: cabe
+  assert.ok(LIMITE_AFD >= 129);
 });

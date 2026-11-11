@@ -17,7 +17,12 @@
   for (let c = 32; c <= 126; c++) ALFABETO.add(String.fromCharCode(c));
   for (const ch of ACENTOS) ALFABETO.add(ch);
 
-  const LIMITE_REPETICAO = 100; // evita {1000000} explodir a AST
+  const LIMITE_REPETICAO = 100; // por {}: evita {1000000} explodir a AST
+  // O limite acima vale para cada {} sozinho; repetições aninhadas multiplicam
+  // ((a{100}){100}){100} seria um milhão de cópias), então também há um teto no
+  // tamanho total da árvore depois de expandir as repetições.
+  const LIMITE_NOS = 4000;
+  let nosCriados = 0;
 
   class ErroER extends Error {
     constructor(mensagem, pos) {
@@ -48,15 +53,22 @@
 
   // Todo nó tem `trecho: [inicio, fim)`, a posição do pedaço da ER que ele representa.
   // O `id` é colocado no fim do parse, em pré-ordem (ver numerar).
-  const eps = (trecho) => ({ t: 'eps', trecho });
-  const car = (set, trecho) => ({ t: 'char', set, trecho });
-  const cat = (a, b, trecho) => ({ t: 'cat', a, b, trecho });
-  const alt = (a, b, trecho) => ({ t: 'alt', a, b, trecho });
-  const star = (a, trecho) => ({ t: 'star', a, trecho });
+  function novoNo(no) {
+    if (++nosCriados > LIMITE_NOS) {
+      const pos = no.trecho ? no.trecho[0] : 0;
+      throw new ErroER(`expressão grande demais: depois de expandir as repetições a árvore passa de ${LIMITE_NOS} nós`, pos);
+    }
+    return no;
+  }
+  const eps = (trecho) => novoNo({ t: 'eps', trecho });
+  const car = (set, trecho) => novoNo({ t: 'char', set, trecho });
+  const cat = (a, b, trecho) => novoNo({ t: 'cat', a, b, trecho });
+  const alt = (a, b, trecho) => novoNo({ t: 'alt', a, b, trecho });
+  const star = (a, trecho) => novoNo({ t: 'star', a, trecho });
 
   // Cópia da subárvore: cada cópia de `a` numa repetição ganha ids próprios.
   function clonar(no) {
-    const c = { t: no.t, trecho: [...no.trecho] };
+    const c = novoNo({ t: no.t, trecho: [...no.trecho] });
     if (no.set) c.set = new Set(no.set);
     if (no.a) c.a = clonar(no.a);
     if (no.b) c.b = clonar(no.b);
@@ -97,6 +109,7 @@
     if (typeof er !== 'string') throw new ErroER('a expressão deve ser um texto', 0);
     const chars = Array.from(er);
     let i = 0;
+    nosCriados = 0;
 
     const fim = () => i >= chars.length;
     const olhar = () => chars[i];
