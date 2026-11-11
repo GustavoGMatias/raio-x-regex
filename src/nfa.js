@@ -154,7 +154,16 @@
     if (set.size > comp.size && comp.size > 0) return '[^' + faixas(comp) + ']';
     if (set.size === 1) return nomear([...set][0]);
     const f = faixas(set);
-    return set.size <= 3 && !/-/.test(f.replace(/\\-/g, '')) ? [...set].sort().map(nomear).join(', ') : '[' + f + ']';
+    return set.size <= 3 && !temIntervalo(f) ? [...set].sort().map(nomear).join(', ') : '[' + f + ']';
+  }
+
+  // `f` (saída de faixas) tem um intervalo a-z? Um '-' escapado (\\-) é só o caractere.
+  function temIntervalo(f) {
+    for (let i = 0; i < f.length; i++) {
+      if (f[i] === '\\') i++;
+      else if (f[i] === '-') return true;
+    }
+    return false;
   }
 
   function nomear(c) { return c === ' ' ? '␣' : c; }

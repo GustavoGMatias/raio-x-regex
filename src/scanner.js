@@ -43,7 +43,10 @@
   // ---------- Borda de palavra ----------
   // "Caractere de palavra" = letra (inclusive acentuada) ou dígito.
   function ehPalavra(c) {
-    return c !== undefined && /[\p{L}\p{N}]/u.test(c);
+    if (c === undefined) return false;
+    if (c >= '0' && c <= '9') return true;
+    // letra (inclusive acentuada): só letras têm maiúscula diferente da minúscula
+    return c.toLowerCase() !== c.toUpperCase();
   }
 
   // O trecho texto[inicio, fim) está "solto", sem estar colado em outra palavra?

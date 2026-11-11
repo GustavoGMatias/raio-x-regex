@@ -130,3 +130,12 @@ test('varrer: padrão com maiusculas aceita o texto em minúscula', () => {
   assert.deepStrictEqual(resumo(texto, varrer(texto, [placaMai])), [['placa', 'abc1d23'], ['placa', 'ABC1D23']]);
   assert.deepStrictEqual(varrer('abc1d23', [placa]), []); // sem a marca, minúscula não entra
 });
+
+test('borda de palavra: letras acentuadas e dígitos contam como palavra (sem RegExp)', () => {
+  const { temBordas } = require('../src/scanner');
+  assert.equal(temBordas('ção x', 0, 3), true);     // "ção" seguido de espaço
+  assert.equal(temBordas('ABC1D234', 0, 7), false); // colado no 4
+  assert.equal(temBordas('ligue(11)', 5, 9), true); // "(" e ")" não são de palavra
+  assert.equal(temBordas('pão-de-ló', 0, 3), true); // "-" não é de palavra
+  assert.equal(temBordas('aéb', 0, 2), false);      // "é" colado no "b"
+});
